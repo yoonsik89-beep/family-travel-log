@@ -8,278 +8,396 @@
 <meta name="theme-color" content="#1f2937">
 <link rel="icon" href="icon-192.png">
 <style>
+  /* ─ 기본: 흰 바탕, 강조색 1개(파랑), 상태색은 의미 있을 때만 ─ */
   :root {
-    --bg: #f7f8fa; --card: #ffffff; --primary: #2563eb; --primary-dark: #1d4ed8;
-    --text: #1f2937; --text-sub: #6b7280; --border: #e5e7eb; --danger: #dc2626;
-    --success: #16a34a; --warning: #d97706; --radius: 8px;
+    --bg: #ffffff; --soft: #f5f5f3; --line: #e2e2de; --line-strong: #c9c9c4;
+    --text: #1d1d1b; --sub: #66665f; --accent: #1f5fbf; --accent-dark: #174a96; --accent-soft: #eaf1fb;
+    --danger: #c62828; --ok: #2e7d32; --warn: #a15c00; --info: #00796b;
+    --bottom-nav: 58px;
+    /* 기존 코드 호환용 이름 */
+    --border: var(--line); --text-sub: var(--sub); --primary: var(--accent); --success: var(--ok); --warning: var(--warn); --card: #fff;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
   body {
-    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", sans-serif;
-    background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6;
-    padding-bottom: 80px;
+    font-family: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; word-break: keep-all;
   }
-  header {
-    position: sticky; top: 0; z-index: 100; background: var(--card);
-    border-bottom: 1px solid var(--border); padding: 12px 16px;
-    display: flex; align-items: center; justify-content: space-between;
+  h2 { font-size: 17px; margin: 0 0 4px; font-weight: 700; }
+  h3 { font-size: 15px; margin: 20px 0 6px; font-weight: 700; }
+  p { margin: 6px 0; }
+  .meta { font-size: 13px; color: var(--sub); }
+  .hint { font-size: 13px; color: var(--sub); margin: 2px 0 0; }
+  .warn { color: var(--danger); }
+  .warn-box { border-left: 3px solid var(--danger); background: #fdf3f2; color: #8e1c1c; padding: 8px 10px; font-size: 14px; margin: 8px 0; }
+  .note-box { border-left: 3px solid var(--line-strong); background: var(--soft); padding: 8px 10px; font-size: 14px; margin: 8px 0; }
+
+  /* ─ 레이아웃 ─ */
+  #sidebar { display: none; }
+  #topbar {
+    position: sticky; top: 0; z-index: 50; background: #fff; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; min-height: 48px;
   }
-  header h1 { margin: 0; font-size: 18px; font-weight: 700; }
-  #saveStatus { font-size: 12px; color: var(--text-sub); }
-  #saveStatus.saved { color: var(--success); }
+  #topbar h1 { font-size: 17px; margin: 0; font-weight: 700; }
+  #saveStatus { font-size: 12px; color: var(--sub); white-space: nowrap; }
+  #saveStatus.saved { color: var(--ok); }
   #saveStatus.error { color: var(--danger); }
-
-  nav#tabs {
-    display: flex; overflow-x: auto; gap: 0; padding: 0 4px;
-    background: var(--card); border-bottom: 1px solid var(--border);
-    position: sticky; top: 57px; z-index: 99; scrollbar-width: none;
-  }
-  nav#tabs::-webkit-scrollbar { display: none; }
-  nav#tabs button {
-    flex: 0 0 auto; padding: 8px 14px; border: 1px solid var(--border);
-    border-radius: 0; background: none; color: var(--text-sub); border-width: 0 0 2px; border-color: transparent;
-    font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
-  }
-  nav#tabs button.active { color: var(--text); border-bottom-color: var(--text); }
-
-  main { padding: 16px; max-width: 900px; margin: 0 auto; }
+  main { padding: 4px 16px calc(var(--bottom-nav) + 90px); }
   section.page { display: none; }
   section.page.active { display: block; }
 
-  .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 16px; margin-bottom: 16px;
+  #bottomNav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; height: calc(var(--bottom-nav) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom); background: #fff; border-top: 1px solid var(--line); display: flex;
   }
-  .card h2 { margin: 0 0 12px; font-size: 16px; font-weight: 700; }
-  .card h3 { margin: 16px 0 8px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
+  #bottomNav button {
+    flex: 1; border: none; background: none; font: inherit; font-size: 13px; color: var(--sub); cursor: pointer;
+    border-top: 2px solid transparent; padding: 0 2px;
+  }
+  #bottomNav button.active { color: var(--text); font-weight: 700; border-top-color: var(--text); }
 
-  label { display: block; font-size: 13px; font-weight: 600; margin: 10px 0 4px; color: var(--text-sub); }
-  input[type="text"], input[type="date"], input[type="time"], input[type="number"],
-  input[type="url"], textarea, select {
-    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
-    font-size: 15px; font-family: inherit; background: #fff; color: var(--text);
+  /* 문서형 구역: 카드 대신 구분선 */
+  .card, .block { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .card:last-child, .block:last-child { border-bottom: none; }
+  .card h2, .block h2 { margin-bottom: 8px; }
+  .card h3 { margin-top: 16px; }
+
+  /* ─ 입력 ─ */
+  label { display: block; font-size: 14px; font-weight: 600; margin: 14px 0 4px; color: var(--text); }
+  label .opt { font-weight: 400; color: var(--sub); font-size: 13px; }
+  label .req { color: var(--danger); font-weight: 600; font-size: 13px; }
+  input[type="text"], input[type="date"], input[type="time"], input[type="number"], input[type="search"], textarea, select {
+    width: 100%; padding: 10px 11px; border: 1px solid var(--line-strong); border-radius: 4px;
+    font-size: 16px; font-family: inherit; background: #fff; color: var(--text);
   }
-  textarea { min-height: 80px; resize: vertical; }
-  input:focus, textarea:focus, select:focus { outline: 2px solid var(--primary); border-color: transparent; }
+  textarea { min-height: 88px; resize: vertical; line-height: 1.6; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+  .field-row { display: flex; gap: 10px; }
+  .field-row > div { flex: 1; min-width: 0; }
 
   .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 10px 18px; border: none; border-radius: 8px; font-size: 14px;
-    font-weight: 600; cursor: pointer; background: var(--primary); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px;
+    padding: 8px 16px; border: 1px solid var(--accent); border-radius: 4px; font: inherit; font-size: 15px;
+    font-weight: 600; cursor: pointer; background: var(--accent); color: #fff; text-decoration: none;
   }
-  .btn:active { background: var(--primary-dark); }
-  .btn.secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
-  .btn.danger { background: var(--danger); }
-  .btn.small { padding: 6px 10px; font-size: 12px; }
-  .btn:disabled { opacity: 0.5; pointer-events: none; }
+  .btn:active { background: var(--accent-dark); }
+  .btn.secondary { background: #fff; color: var(--text); border-color: var(--line-strong); }
+  .btn.ghost { background: none; border-color: transparent; color: var(--accent); padding-left: 6px; padding-right: 6px; }
+  .btn.danger { background: #fff; color: var(--danger); border-color: #e6b3b3; }
+  .btn.small { min-height: 34px; padding: 4px 10px; font-size: 14px; }
+  .btn:disabled { opacity: .45; pointer-events: none; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .row > .grow { flex: 1; min-width: 140px; }
+  .row.tight { gap: 6px; }
+  label.btn { margin: 0; }
 
-  .row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .row > * { flex: 1; min-width: 120px; }
-
-  .list-item {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    padding: 12px 0; border-bottom: 1px solid var(--border); gap: 8px;
-  }
+  /* ─ 목록 ─ */
+  .list-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
   .list-item:last-child { border-bottom: none; }
-  .list-item .meta { font-size: 12px; color: var(--text-sub); }
-  .list-item .title { font-weight: 600; font-size: 14px; }
+  .list-item.link { cursor: pointer; }
+  .list-item .title { font-weight: 600; font-size: 15px; }
+  .list-item .meta { font-size: 13px; }
+  .count { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .go { color: var(--accent); font-size: 14px; white-space: nowrap; }
+  .empty { padding: 28px 0; color: var(--sub); font-size: 14px; }
 
-  .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-  .media-item {
-    position: relative; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
-    background: #000;
-  }
-  .media-item img, .media-item video { width: 100%; height: 110px; object-fit: cover; display: block; }
-  .media-item .info { padding: 6px 8px; background: var(--card); font-size: 11px; }
-  .media-item .badge {
-    position: absolute; top: 4px; left: 4px; font-size: 10px; padding: 2px 6px;
-    border-radius: 4px; background: rgba(0,0,0,0.6); color: #fff;
-  }
-  .media-item .badge.approved { background: var(--success); }
-  .media-item .badge.review { background: var(--warning); }
-  .media-item .badge.excluded { background: var(--danger); }
+  /* 상태 표시: 글자 앞 작은 색 점 */
+  .st { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--sub); white-space: nowrap; }
+  .st::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #9e9e98; flex-shrink: 0; }
+  .st.detected::before { background: var(--warn); } .st.check::before { background: var(--danger); }
+  .st.masked::before { background: var(--info); } .st.approved::before { background: var(--ok); }
+  .st.excluded::before { background: #d0d0cb; } .st.excluded { text-decoration: line-through; }
+  .tag { display: inline-block; font-size: 12px; padding: 0 5px; border: 1px solid var(--line-strong); border-radius: 3px; color: var(--sub); line-height: 18px; }
+  .tag.edited { border-color: var(--info); color: var(--info); }
+  .tag.gps { border-color: var(--danger); color: var(--danger); }
 
-  .checklist-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .checklist-item input[type="checkbox"] { width: 20px; height: 20px; margin-top: 2px; flex-shrink: 0; }
-  .checklist-item .label { flex: 1; font-size: 14px; }
-  .checklist-item .note { font-size: 12px; color: var(--text-sub); }
+  /* 탭형 전환 (원고 형식, 필터 등) */
+  .seg { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin: 8px 0; }
+  .seg button { border: none; background: none; font: inherit; font-size: 14px; padding: 8px 10px; color: var(--sub); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .seg button.on { color: var(--text); font-weight: 700; border-bottom-color: var(--text); }
+  .seg button .count { font-weight: 400; margin-left: 3px; }
+
+  /* 화면 아래 고정 작업 줄 (엄지 위치) */
+  .actionbar {
+    position: fixed; left: 0; right: 0; bottom: calc(var(--bottom-nav) + env(safe-area-inset-bottom)); z-index: 55;
+    background: #fff; border-top: 1px solid var(--line); padding: 8px 16px; display: flex; gap: 8px; align-items: center;
+  }
+  .actionbar .btn { flex: 1; }
+  .actionbar .info { flex: 1; font-size: 14px; }
+  #bulkBar .info { flex: 0 0 auto; white-space: nowrap; }
+  #bulkBar select { flex: 1; min-width: 0; }
+  #bulkBar .btn { flex: 0 0 auto; white-space: nowrap; }
+
+  /* ─ 방문 기록 단계 ─ */
+  .steps { display: flex; gap: 0; overflow-x: auto; border-bottom: 1px solid var(--line); margin: 0 -16px 4px; padding: 0 10px; scrollbar-width: none; }
+  .steps::-webkit-scrollbar { display: none; }
+  .steps button { flex: 0 0 auto; border: none; background: none; font: inherit; font-size: 13px; color: var(--sub); padding: 10px 6px; cursor: pointer; border-bottom: 2px solid transparent; }
+  .steps button.on { color: var(--text); font-weight: 700; border-bottom-color: var(--text); }
+  .steps button.done { color: var(--text); }
+  .step { display: none; }
+  .step.on { display: block; }
+  .step-head { margin: 14px 0 0; }
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .summary-table th { text-align: left; font-weight: 600; color: var(--sub); width: 34%; padding: 7px 8px 7px 0; vertical-align: top; border-bottom: 1px solid var(--line); }
+  .summary-table td { padding: 7px 0; border-bottom: 1px solid var(--line); white-space: pre-line; }
+  .summary-table td.missing { color: var(--sub); }
+
+  /* ─ 사진 관리 ─ */
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .toolbar select { width: auto; flex: 1; min-width: 150px; }
+  .photo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; margin-top: 8px; }
+  .tile { position: relative; padding: 0; border: none; background: var(--soft); cursor: pointer; text-align: left; font: inherit; }
+  .tile .img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; background: #ddd; }
+  .tile .missing { display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--sub); }
+  .tile .cap { display: block; padding: 3px 4px 5px; font-size: 12px; line-height: 1.35; background: #fff; }
+  .tile .cap .name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sub); }
+  .tile .vid { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,.65); color: #fff; font-size: 11px; padding: 0 4px; border-radius: 2px; }
+  .tile .sel { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border: 2px solid #fff; border-radius: 3px; background: rgba(0,0,0,.25); }
+  .tile.selected .sel { background: var(--accent); }
+  .tile.selected .img { outline: 3px solid var(--accent); outline-offset: -3px; }
+  .tile.current .img { outline: 3px solid var(--text); outline-offset: -3px; }
+  .tile.dim .img { opacity: .5; }
+
+  .detail { display: none; }
+  .detail.open {
+    display: block; position: fixed; inset: 0; z-index: 80; background: #fff; overflow-y: auto;
+    padding: 0 16px calc(var(--bottom-nav) + 24px);
+  }
+  .detail-head { position: sticky; top: 0; background: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); z-index: 1; }
+  .detail-preview { display: block; width: 100%; max-height: 52vh; object-fit: contain; background: var(--soft); margin-top: 10px; }
+  .kv { font-size: 14px; margin: 8px 0; }
+  .kv span { color: var(--sub); }
+
+  /* 개인정보 */
+  .review-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .review-row img { width: 64px; height: 64px; object-fit: cover; flex-shrink: 0; background: var(--soft); }
+  .review-row .body { flex: 1; min-width: 0; }
+  .review-row .name { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .review-row.current { background: var(--accent-soft); }
+  .face-canvas { max-width: 100%; height: auto; display: block; touch-action: none; background: var(--soft); }
+  #faceEditorContainer .empty { padding: 16px 0; }
+
+  /* 체크리스트 */
+  .checklist-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .checklist-item input[type="checkbox"] { width: 22px; height: 22px; margin-top: 1px; flex-shrink: 0; }
+  .checklist-item .label { flex: 1; font-size: 15px; }
+  .checklist-item .note { font-size: 13px; color: var(--sub); }
+  label.check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; font-size: 15px; margin: 10px 0; }
+  label.check input { width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ─ 원고 편집기 ─ */
+  .editor-panels > .panel { display: none; }
+  .editor-panels > .panel.on { display: block; }
+  .ed-title { font-size: 18px; font-weight: 700; }
+  .ed-sec { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .ed-sec .ed-head { display: flex; gap: 6px; align-items: center; }
+  .ed-sec .ed-head input { font-weight: 700; border-color: transparent; padding-left: 0; }
+  .ed-sec .ed-head input:hover { border-color: var(--line); }
+  .ed-sec .todo { font-size: 13px; color: var(--warn); }
+  .ed-photos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: flex-start; }
+  .ed-photo { position: relative; width: 84px; font-size: 11px; color: var(--sub); }
+  .ed-photo img { width: 84px; height: 64px; object-fit: cover; display: block; background: var(--soft); }
+  .ed-photo button { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; border: none; background: rgba(0,0,0,.6); color: #fff; border-radius: 2px; cursor: pointer; font-size: 13px; line-height: 1; }
+  .ed-add { width: auto; min-width: 140px; font-size: 14px; padding: 6px 8px; }
+  .side-photo { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .side-photo img { width: 52px; height: 52px; object-fit: cover; flex-shrink: 0; background: var(--soft); }
+  .side-photo .body { flex: 1; min-width: 0; }
+  .side-photo select { font-size: 13px; padding: 4px 6px; margin-top: 2px; }
+  .cap-row { padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .cap-row .no { font-size: 13px; font-weight: 700; }
+  .cap-row input { margin-top: 4px; font-size: 15px; }
 
   .output-box {
-    background: #1e293b; color: #e2e8f0; padding: 14px; border-radius: 8px;
-    font-family: "Consolas", "Courier New", monospace; font-size: 13px;
-    white-space: pre-wrap; word-break: break-all; max-height: 400px; overflow: auto;
+    background: var(--soft); color: var(--text); border: 1px solid var(--line); padding: 12px; font-size: 14px;
+    white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto; font-family: inherit;
   }
+  .restore-box { border: 1px solid var(--line-strong); padding: 12px; font-size: 14px; margin-top: 10px; }
 
-  .empty { text-align: center; padding: 40px 16px; color: var(--text-sub); font-size: 14px; }
+  .more-list .list-item { padding: 15px 0; }
+
+  /* 토스트·확인창 */
   .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: #1f2937; color: #fff; padding: 12px 16px; border-radius: 6px; max-width: calc(100% - 32px);
-    font-size: 13px; z-index: 999; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+    position: fixed; bottom: calc(var(--bottom-nav) + 80px); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px);
+    background: #222; color: #fff; padding: 10px 14px; border-radius: 4px; font-size: 14px; z-index: 999; opacity: 0; transition: opacity .2s; pointer-events: none;
   }
   .toast.show { opacity: 1; }
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-    z-index: 500; align-items: center; justify-content: center; padding: 16px;
-  }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 500; align-items: flex-end; justify-content: center; }
   .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--card); border-radius: var(--radius); padding: 20px;
-    max-width: 420px; width: 100%; max-height: 90vh; overflow: auto;
-  }
-  .modal h3 { margin: 0 0 12px; font-size: 16px; }
+  .modal { background: #fff; width: 100%; max-width: 480px; max-height: 88vh; overflow: auto; padding: 18px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 8px 8px 0 0; }
+  .modal h3 { margin: 0 0 10px; font-size: 17px; }
   .modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  .modal .actions .btn { min-width: 96px; }
 
-  .chip {
-    display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px;
-    border-radius: 4px; background: var(--bg); border: 1px solid var(--border);
-    font-size: 13px; margin: 2px;
-  }
-  .chip button { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px; padding: 0; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 8px; border: 1px solid var(--line-strong); border-radius: 3px; font-size: 14px; margin: 3px 2px; }
+  .chip button { background: none; border: none; color: var(--sub); cursor: pointer; font-size: 14px; padding: 0 4px; }
 
+  /* ─ 노트북·PC: 왼쪽 메뉴 + 넓은 작업 영역 ─ */
+  @media (min-width: 1024px) {
+    body { font-size: 15px; }
+    #app { display: grid; grid-template-columns: 216px 1fr; min-height: 100vh; }
+    #bottomNav { display: none; }
+    #sidebar {
+      display: block; position: sticky; top: 0; height: 100vh; overflow-y: auto; border-right: 1px solid var(--line);
+      background: var(--soft); padding: 14px 10px;
+    }
+    #sidebar .brand { font-weight: 700; font-size: 15px; padding: 4px 10px 12px; }
+    #sidebar .grp { font-size: 12px; color: var(--sub); padding: 14px 10px 4px; }
+    #sidebar button {
+      display: block; width: 100%; text-align: left; border: none; background: none; font: inherit; font-size: 15px;
+      padding: 7px 10px; border-radius: 4px; cursor: pointer; color: var(--text);
+    }
+    #sidebar button:hover { background: #ebebe8; }
+    #sidebar button.active { background: #fff; font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); }
+    #sidebar .badge { float: right; font-size: 12px; color: var(--sub); }
+    #topbar { padding: 12px 28px; }
+    main { padding: 4px 28px 60px; }
+    .narrow { max-width: 760px; }
+    .actionbar { position: sticky; bottom: 0; margin: 16px 0 0; padding: 10px 0; justify-content: flex-end; }
+    .actionbar .btn { flex: 0 0 auto; min-width: 110px; }
+    .toast { bottom: 28px; }
+    .modal-overlay { align-items: center; }
+    .modal { border-radius: 6px; padding: 20px; }
+    .steps { margin: 0 0 4px; padding: 0; }
 
-  /* [추가] 사진 목록: 휴대폰에서 한 줄에 한 장씩, 입력칸을 바로 옆에 */
-  .media-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); border-left: 4px solid transparent; padding-left: 8px; }
-  .media-row:last-child { border-bottom: none; }
-  .media-row .thumb { width: 96px; height: 96px; object-fit: cover; border-radius: 6px; background: #111; flex-shrink: 0; }
-  .media-row .thumb.missing { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; background: #9ca3af; }
-  .media-fields { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-  .media-fields .fname { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .media-fields input, .media-fields select { padding: 7px 8px; font-size: 14px; }
-  .row.tight { gap: 6px; }
-  .row.tight > * { min-width: 0; }
-  .row.actions > .btn { flex: 0 0 auto; }
-  .meta { font-size: 12px; color: var(--text-sub); }
-  .warn { color: var(--danger); }
-  .warn-box { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 8px 10px; border-radius: 6px; font-size: 13px; }
-  label.check { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; color: var(--text); font-size: 14px; margin: 8px 0; }
-  label.check input { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; }
-  .st-review { border-left-color: #9ca3af; } .st-check { border-left-color: var(--warning); }
-  .st-masked { border-left-color: #0891b2; } .st-approved { border-left-color: var(--success); }
-  .st-excluded { border-left-color: var(--danger); opacity: .75; }
-  .thumb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-  .thumb-btn { padding: 0; border: 1px solid var(--border); border-bottom-width: 4px; background: #fff; border-radius: 6px; overflow: hidden; cursor: pointer; text-align: left; }
-  .thumb-btn img { width: 100%; height: 90px; object-fit: cover; display: block; }
-  .thumb-btn span { display: block; font-size: 11px; padding: 3px 5px; color: var(--text-sub); }
-  .thumb-btn.st-approved { border-bottom-color: var(--success); } .thumb-btn.st-masked { border-bottom-color: #0891b2; }
-  .thumb-btn.st-excluded { border-bottom-color: var(--danger); } .thumb-btn.st-check { border-bottom-color: var(--warning); }
-  .face-canvas { max-width: 100%; height: auto; display: block; border-radius: 6px; touch-action: none; }
-  .restore-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 14px; }
+    /* 사진: 격자 + 오른쪽 상세 패널 */
+    .media-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+    .photo-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+    .detail, .detail.open { display: block; position: sticky; top: 64px; inset: auto; z-index: auto; max-height: calc(100vh - 80px); overflow-y: auto; padding: 0 0 20px; border-left: 1px solid var(--line); padding-left: 20px; }
+    .detail .close-detail { display: none; }
+    .media-layout .actionbar { position: sticky; bottom: 0; }
 
-  .stats { display: flex; border: 1px solid var(--border); border-radius: 6px; }
-  .stats > div { flex: 1; padding: 10px 12px; border-left: 1px solid var(--border); }
-  .stats > div:first-child { border-left: none; }
-  .stats b { display: block; font-size: 22px; }
-  .stats span { font-size: 12px; color: var(--text-sub); }
-  .seg { display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-  .seg button { flex: 1 1 auto; padding: 8px 10px; border: none; border-left: 1px solid var(--border); background: #fff; font-size: 13px; cursor: pointer; color: var(--text-sub); }
-  .seg button:first-child { border-left: none; }
-  .seg button.on { background: var(--text); color: #fff; }
-  .output-box { background: #f9fafb; color: var(--text); border: 1px solid var(--border); font-family: inherit; word-break: keep-all; overflow-wrap: anywhere; }
+    .privacy-layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
+    .privacy-layout > div:last-child { position: sticky; top: 64px; }
 
-  @media (max-width: 480px) {
-    main { padding: 12px; }
-    .card { padding: 12px; }
-    .btn { padding: 9px 14px; }
+    /* 원고: 왼쪽 사진 / 가운데 원고 / 오른쪽 캡션·SEO */
+    .editor-tabs { display: none; }
+    .editor-panels { display: grid; grid-template-columns: 250px minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+    .editor-panels > .panel, .editor-panels > .panel.on { display: block; }
+    .editor-panels > .panel.side { position: sticky; top: 64px; max-height: calc(100vh - 80px); overflow-y: auto; }
   }
 </style>
 </head>
 <body>
+<div id="app">
 
-<header>
-  <h1>가족 나들이 기록장</h1>
-  <span id="saveStatus">준비됨</span>
-</header>
-
-<nav id="tabs">
-  <button data-page="dashboard" class="active">대시보드</button>
-  <button data-page="newVisit">새 기록</button>
-  <button data-page="visitList">기록 목록</button>
-  <button data-page="media">사진·영상</button>
-  <button data-page="checklist">촬영 체크</button>
-  <button data-page="privacy">개인정보</button>
+<!-- PC: 왼쪽 메뉴 -->
+<nav id="sidebar" aria-label="주 메뉴">
+  <div class="brand">가족 나들이 기록장</div>
+  <button data-page="dashboard">홈</button>
+  <div class="grp">기록</div>
+  <button data-page="newVisit">새 방문 기록</button>
+  <button data-page="visitList">방문 기록 목록</button>
+  <button data-page="checklist">촬영 체크리스트</button>
+  <div class="grp">정리</div>
+  <button data-page="media">사진·동영상</button>
+  <button data-page="privacy">개인정보 검토</button>
   <button data-page="blog">블로그 원고</button>
+  <div class="grp">관리</div>
   <button data-page="backup">백업·복원</button>
   <button data-page="settings">설정</button>
 </nav>
 
+<div id="content">
+<header id="topbar">
+  <h1 id="pageTitle">홈</h1>
+  <span id="saveStatus">준비됨</span>
+</header>
+
 <main>
 
-<!-- ========== 대시보드 ========== -->
+<!-- ========== 홈: 할 일 중심 ========== -->
 <section id="page-dashboard" class="page active">
-  <div class="card">
-    <h2>현황</h2>
-    <div id="dashboardStats" class="stats">
-      <div><b id="statVisits">0</b><span>방문 기록</span></div>
-      <div><b id="statMedia">0</b><span>사진·영상</span></div>
-      <div><b id="statApproved">0</b><span>게시 승인</span></div>
+  <div class="narrow">
+    <div class="block">
+      <button class="btn" style="width:100%;" onclick="startNewVisit()">새 방문 기록 작성</button>
     </div>
-  </div>
-  <div class="card">
-    <h2>최근 기록</h2>
-    <div id="recentVisits"></div>
-  </div>
-  <div class="card">
-    <h2>빠른 시작</h2>
-    <div class="row">
-      <button class="btn" onclick="switchPage('newVisit')">새 방문 기록</button>
-      <button class="btn secondary" onclick="switchPage('media')">사진 추가</button>
+    <div class="block">
+      <h2>할 일</h2>
+      <div id="todoList"></div>
+    </div>
+    <div class="block">
+      <h2>최근 방문 기록</h2>
+      <div id="recentVisits"></div>
     </div>
   </div>
 </section>
 
-<!-- ========== 새 방문 기록 ========== -->
+<!-- ========== 방문 기록 작성 (6단계) ========== -->
 <section id="page-newVisit" class="page">
-  <div class="card">
-    <h2 id="visitFormTitle">새 방문 기록</h2>
-    <input type="hidden" id="visitId">
-    <label>방문 장소명 *</label>
-    <input type="text" id="vPlaceName" placeholder="예: 서울숲, 롯데월드 아쿠아리움">
-    <div class="row">
-      <div><label>장소 유형</label><select id="vPlaceType"></select></div>
-      <div><label>방문 날짜 *</label><input type="date" id="vVisitDate"></div>
-      <div><label>방문 시간</label><input type="time" id="vVisitTime"></div>
+  <div class="narrow">
+  <p class="meta" id="visitFormTitle" style="margin-top:10px;">새 방문 기록</p>
+  <input type="hidden" id="visitId">
+  <div class="steps" id="stepNav">
+    <button type="button" data-step="1">1 기본 정보</button>
+    <button type="button" data-step="2">2 예약·교통·주차</button>
+    <button type="button" data-step="3">3 시설·이용</button>
+    <button type="button" data-step="4">4 체험·메모</button>
+    <button type="button" data-step="5">5 사진·영상</button>
+    <button type="button" data-step="6">6 확인</button>
+  </div>
+
+  <div class="step" data-step="1">
+    <h2 class="step-head">기본 정보</h2>
+    <label>어디에 다녀왔나요? <span class="req">필수</span></label>
+    <input type="text" id="vPlaceName" placeholder="예: 서울숲, 국립어린이과학관">
+    <div class="field-row">
+      <div><label>방문 날짜 <span class="req">필수</span></label><input type="date" id="vVisitDate"></div>
+      <div><label>시간 <span class="opt">선택</span></label><input type="time" id="vVisitTime"></div>
     </div>
-    <label>지역</label>
+    <label>장소 종류</label>
+    <select id="vPlaceType"></select>
+    <label>지역 <span class="opt">시·군·구까지</span></label>
     <input type="text" id="vRegion" placeholder="예: 서울 성동구">
-    <label>방문 목적</label>
-    <input type="text" id="vPurpose" placeholder="예: 아이 체험 활동">
-    <label>방문 계기</label>
+    <label>왜 가게 됐나요? <span class="opt">원고의 '방문 계기'</span></label>
     <input type="text" id="vReason" placeholder="예: 비 오는 주말 실내 놀거리를 찾다가">
-    <label>함께한 가족 구성원 (선택)</label>
-    <input type="text" id="vFamily" placeholder="예: 엄마, 아빠, 5세 아이">
+    <label>방문 목적 <span class="opt">선택</span></label>
+    <input type="text" id="vPurpose" placeholder="예: 아이 과학 체험">
+    <label>함께 간 사람 <span class="opt">선택 · 원고에 들어가지 않음</span></label>
+    <input type="text" id="vFamily" placeholder="예: 엄마, 아빠, 아이">
+  </div>
 
-    <h3>공식 안내 정보</h3>
+  <div class="step" data-step="2">
+    <h2 class="step-head">예약·교통·주차</h2>
+    <p class="hint">홈페이지나 안내문 기준 정보입니다. 모르면 비워 두세요.</p>
     <label>예약 방법</label>
-    <input type="text" id="vReservation" placeholder="예: 네이버 예약, 현장 구매">
-    <label>입장료 및 이용 요금</label>
-    <input type="text" id="vFee" placeholder="예: 성인 15,000원 / 아동 12,000원">
-    <label>주차 정보</label>
-    <input type="text" id="vParking" placeholder="예: 무료 주차 2시간">
-    <label>대중교통 및 접근성</label>
-    <input type="text" id="vTransit" placeholder="예: 2호선 뚝섬역 도보 5분">
-    <label>운영시간</label>
-    <input type="text" id="vHours" placeholder="예: 10:00~18:00 (월요일 휴무)">
-    <label>혼잡도 / 대기시간</label>
-    <input type="text" id="vCongestion" placeholder="예: 주말 오후 붐빔, 대기 20분">
-    <label>이용한 시설</label>
-    <input type="text" id="vFacilities" placeholder="예: 실내 놀이터, 카페, 수유실">
-    <label>보호자 편의시설</label>
-    <input type="text" id="vConvenience" placeholder="예: 수유실, 유아차 대여, 보호자 좌석">
-    <label>주변 볼거리</label>
-    <input type="text" id="vNearby" placeholder="예: 서울숲 산책로, 카페 거리">
-    <label>음식 및 식사 정보</label>
-    <input type="text" id="vFood" placeholder="예: 내부 카페 있음, 도시락 반입 가능">
+    <input type="text" id="vReservation" placeholder="예: 네이버 예약, 현장 발권">
+    <label>입장료·이용 요금</label>
+    <input type="text" id="vFee" placeholder="예: 어른 5,000원 / 어린이 3,000원">
+    <label>운영 시간·휴무</label>
+    <input type="text" id="vHours" placeholder="예: 10:00~18:00, 월요일 휴무">
+    <label>주차</label>
+    <input type="text" id="vParking" placeholder="예: 지하주차장, 2시간 무료">
+    <label>대중교통·가는 길</label>
+    <input type="text" id="vTransit" placeholder="예: 2호선 뚝섬역 5번 출구 도보 5분">
+  </div>
 
-    <h3>실제 이용 경험</h3>
-    <label>실제 이용 경험</label>
-    <textarea id="vExperience" placeholder="직접 방문해 느낀 점을 자유롭게 기록"></textarea>
+  <div class="step" data-step="3">
+    <h2 class="step-head">시설·이용 정보</h2>
+    <label>이용한 시설</label>
+    <textarea id="vFacilities" placeholder="예: 1층 물놀이 체험관, 2층 블록 놀이방"></textarea>
+    <label>보호자 편의시설</label>
+    <input type="text" id="vConvenience" placeholder="예: 수유실, 유아차 대여, 보호자 의자">
+    <label>붐빔·대기 시간</label>
+    <input type="text" id="vCongestion" placeholder="예: 주말 오후 붐빔, 입장 대기 20분">
+    <label>식사·먹거리</label>
+    <input type="text" id="vFood" placeholder="예: 내부 카페, 도시락 먹는 곳 있음">
+    <label>주변에 가 볼 만한 곳</label>
+    <input type="text" id="vNearby" placeholder="예: 바로 옆 산책로">
+  </div>
+
+  <div class="step" data-step="4">
+    <h2 class="step-head">체험·메모</h2>
+    <p class="hint">직접 겪은 내용입니다. 원고의 중심이 됩니다.</p>
+    <label>무엇을 했나요?</label>
+    <textarea id="vExperience" placeholder="실제로 이용해 본 내용을 자유롭게"></textarea>
     <label>좋았던 점</label>
-    <textarea id="vPros" placeholder="아이와 함께 좋았던 부분"></textarea>
+    <textarea id="vPros"></textarea>
     <label>아쉬웠던 점</label>
-    <textarea id="vCons" placeholder="아쉬웠던 부분"></textarea>
-    <label>추천 대상</label>
-    <input type="text" id="vRecommend" placeholder="예: 3~7세 유아 가정">
-    <label>재방문 의사</label>
+    <textarea id="vCons"></textarea>
+    <label>이런 가족에게 추천</label>
+    <input type="text" id="vRecommend" placeholder="예: 4~7세 아이가 있는 가족">
+    <label>다시 갈 생각</label>
     <select id="vRevisit">
       <option value="">선택 안 함</option>
       <option value="적극 추천">적극 추천</option>
@@ -287,145 +405,196 @@
       <option value="보통">보통</option>
       <option value="재방문 의사 없음">재방문 의사 없음</option>
     </select>
-    <label>기타 메모</label>
-    <textarea id="vMemo" placeholder="기타 참고 사항"></textarea>
+    <label>개인 메모 <span class="opt">원고에 들어가지 않음</span></label>
+    <textarea id="vMemo"></textarea>
+  </div>
 
-    <div class="row" style="margin-top:16px;">
-      <button class="btn" id="btnSaveVisit">저장</button>
-      <button class="btn secondary" id="btnCancelVisit">취소</button>
+  <div class="step" data-step="5">
+    <h2 class="step-head">사진·영상 연결</h2>
+    <p class="hint">여러 장을 한 번에 고를 수 있습니다. 처음 추가할 때 기록이 먼저 저장됩니다.</p>
+    <div class="row" style="margin-top:10px;">
+      <label class="btn secondary grow">사진 추가<input type="file" id="stepPhotoInput" accept="image/*" multiple hidden></label>
+      <label class="btn secondary grow">동영상 추가<input type="file" id="stepVideoInput" accept="video/*" multiple hidden></label>
     </div>
+    <div id="stepMediaSummary" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="step" data-step="6">
+    <h2 class="step-head">최종 확인</h2>
+    <div id="visitSummary"></div>
+  </div>
+
+  <div class="actionbar">
+    <button class="btn secondary" id="btnStepPrev">이전</button>
+    <button class="btn secondary" id="btnSaveVisit">저장</button>
+    <button class="btn" id="btnStepNext">다음</button>
+  </div>
+  <p style="margin-top:20px;"><button class="btn ghost" id="btnCancelVisit">작성 취소</button></p>
   </div>
 </section>
 
 <!-- ========== 방문 기록 목록 ========== -->
 <section id="page-visitList" class="page">
-  <div class="card">
-    <div class="row">
-      <input type="text" id="searchVisit" placeholder="장소명, 지역, 메모 검색" style="flex:2;">
-      <select id="filterType" style="flex:1;"><option value="">전체 유형</option></select>
+  <div class="narrow">
+    <div class="toolbar">
+      <input type="search" id="searchVisit" placeholder="장소·지역·메모 검색" style="flex:2;min-width:150px;">
+      <select id="filterType"><option value="">전체 종류</option></select>
     </div>
+    <div id="visitListContainer"></div>
+    <div class="actionbar"><button class="btn" onclick="startNewVisit()">새 방문 기록</button></div>
   </div>
-  <div id="visitListContainer"></div>
 </section>
 
-<!-- ========== 사진·동영상 관리 ========== -->
+<!-- ========== 사진·동영상 ========== -->
 <section id="page-media" class="page">
-  <div class="card">
-    <h2>사진·동영상 관리</h2>
-    <label>방문 기록 선택</label>
-    <select id="mediaVisitSelect"></select>
-    <div class="row" style="margin-top:10px;">
-      <label class="btn secondary" style="cursor:pointer;text-align:center;">
-        사진 추가 <input type="file" id="mediaPhotoInput" accept="image/*" multiple hidden>
-      </label>
-      <label class="btn secondary" style="cursor:pointer;text-align:center;">
-        동영상 추가 <input type="file" id="mediaVideoInput" accept="video/*" multiple hidden>
-      </label>
-    </div>
+  <div class="toolbar">
+    <select id="mediaVisitSelect" aria-label="방문 기록"></select>
+    <select id="mediaFilter" aria-label="상태 필터">
+      <option value="">전체</option>
+      <option value="todo">정리 안 됨 (검토 전)</option>
+      <option value="privacy">개인정보 확인 필요</option>
+      <option value="approved">게시 가능</option>
+      <option value="excluded">게시 제외</option>
+      <option value="video">동영상만</option>
+    </select>
   </div>
-  <div id="mediaListContainer" class="card">
-    <div class="empty">방문 기록을 선택하고 사진·동영상을 추가하세요.</div>
+  <div class="media-layout">
+    <div>
+      <div class="row" style="margin-top:8px;">
+        <label class="btn secondary">사진 추가<input type="file" id="mediaPhotoInput" accept="image/*" multiple hidden></label>
+        <label class="btn secondary">동영상 추가<input type="file" id="mediaVideoInput" accept="video/*" multiple hidden></label>
+        <button class="btn ghost" id="btnSelectMode">여러 장 선택</button>
+      </div>
+      <div id="mediaListContainer"><div class="empty">방문 기록을 고르세요.</div></div>
+      <div class="actionbar" id="bulkBar" hidden>
+        <span class="info" id="bulkCount">0장 선택</span>
+        <select id="bulkCategory" style="width:auto;max-width:140px;"></select>
+        <button class="btn secondary small" id="btnBulkCheck">가림 필요</button>
+        <button class="btn secondary small" id="btnBulkExclude">게시 제외</button>
+      </div>
+    </div>
+    <aside class="detail" id="mediaDetail"><p class="meta" style="padding-top:12px;">사진을 누르면 여기에서 설명·분류·상태를 편집합니다.</p></aside>
   </div>
 </section>
 
 <!-- ========== 촬영 체크리스트 ========== -->
 <section id="page-checklist" class="page">
-  <div class="card">
-    <h2>촬영 체크리스트</h2>
-    <label>방문 기록 선택</label>
-    <select id="checklistVisitSelect"></select>
-  </div>
-  <div id="checklistContainer" class="card"></div>
-  <div class="card">
-    <h3>항목 추가</h3>
-    <div class="row">
-      <input type="text" id="newChecklistLabel" placeholder="새 촬영 항목">
-      <button class="btn small" id="btnAddChecklist">추가</button>
+  <div class="narrow">
+    <div class="toolbar"><select id="checklistVisitSelect" aria-label="방문 기록"></select></div>
+    <div id="checklistContainer"></div>
+    <div class="row" style="margin-top:12px;">
+      <input type="text" id="newChecklistLabel" placeholder="촬영 항목 추가" class="grow">
+      <button class="btn secondary" id="btnAddChecklist">추가</button>
     </div>
   </div>
 </section>
 
-<!-- ========== 개인정보 보호 ========== -->
+<!-- ========== 개인정보 검토 ========== -->
 <section id="page-privacy" class="page">
-  <div class="card">
-    <h2>개인정보 보호</h2>
-    <p style="font-size:13px;color:var(--text-sub);">
-      사진을 불러와 얼굴을 자동 감지하거나 수동으로 가림 처리할 수 있습니다.
-      <strong>원본은 절대 덮어쓰지 않으며</strong>, 편집본은 별도로 저장됩니다.
-      자동 감지는 보조 수단이며 완벽한 보호를 보장하지 않습니다.
-    </p>
-    <label>방문 기록 선택</label>
-    <select id="privacyVisitSelect"></select>
-    <div id="privacyMediaContainer" style="margin-top:12px;"></div>
-  </div>
-  <div class="card">
-    <h3>얼굴 가림 도구</h3>
-    <div id="faceEditorContainer">
-      <div class="empty">위에서 사진을 선택하면 편집 도구가 나타납니다.</div>
+  <div class="toolbar"><select id="privacyVisitSelect" aria-label="방문 기록"></select></div>
+  <div class="privacy-layout">
+    <div>
+      <div class="seg" id="privacyFilter"></div>
+      <div id="privacyMediaContainer"></div>
+    </div>
+    <div>
+      <div id="faceEditorContainer">
+        <p class="meta" style="padding-top:12px;">사진을 고르면 가림 도구가 열립니다. 원본은 바뀌지 않고, 가린 사진은 '편집본'으로 따로 저장됩니다.
+        자동 감지는 보조 수단이므로 마지막 확인은 직접 해 주세요.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ========== 블로그 원고 ========== -->
+<!-- ========== 블로그 원고 편집기 ========== -->
 <section id="page-blog" class="page">
-  <div class="card">
-    <h2>블로그 원고 작성</h2>
-    <label>방문 기록 선택</label>
-    <select id="blogVisitSelect"></select>
-    <div class="row" style="margin-top:10px;">
-      <button class="btn" id="btnGenerateBlog">원고 생성</button>
-      <button class="btn secondary" id="btnGeneratePrompt">AI 프롬프트 생성</button>
-    </div>
+  <div class="toolbar">
+    <select id="blogVisitSelect" aria-label="방문 기록"></select>
+    <button class="btn" id="btnGenerateBlog">원고 만들기</button>
+    <button class="btn ghost" id="btnGeneratePrompt">AI 전달용 프롬프트</button>
   </div>
-  <div id="blogOutputContainer" class="card">
-    <div class="empty">방문 기록을 선택하고 원고를 생성하세요.</div>
-  </div>
+  <div id="blogOutputContainer"><div class="empty">방문 기록을 고르고 [원고 만들기]를 누르세요.</div></div>
 </section>
 
 <!-- ========== 백업·복원 ========== -->
 <section id="page-backup" class="page">
-  <div class="card">
-    <h2>백업</h2>
-    <p class="meta"><b>ZIP 전체 백업</b>에는 기록과 사진·동영상 원본이 모두 들어갑니다. 휴대폰↔노트북 이동이나 OneDrive 보관은 ZIP을 사용하세요.
-    JSON은 사진 없이 기록만 담긴 가벼운 백업입니다.</p>
-    <div class="row">
-      <button class="btn" id="btnBackupZip">ZIP 전체 백업</button>
-      <button class="btn secondary" id="btnBackupJson">기록만 백업(JSON)</button>
+  <div class="narrow">
+    <div class="block">
+      <h2>마지막 백업</h2>
+      <p id="backupStatus" class="meta"></p>
     </div>
-    <p class="meta" id="backupStatus" style="margin-top:8px;"></p>
-  </div>
-  <div class="card">
-    <h2>복원</h2>
-    <p class="meta">ZIP(사진 포함) 또는 JSON(기록만) 백업 파일을 고르세요. 복원 전에 내용을 먼저 보여 줍니다.</p>
-    <label class="btn secondary" style="cursor:pointer;text-align:center;">
-      백업 파일 선택 <input type="file" id="restoreJsonInput" accept=".zip,.json,application/zip,application/json" hidden>
-    </label>
-    <div id="restorePreview" style="margin-top:12px;"></div>
+    <div class="block">
+      <h2>백업하기</h2>
+      <p class="hint"><b>전체 백업(ZIP)</b>에는 기록과 사진·동영상 원본이 모두 들어갑니다. 기기를 옮기거나 OneDrive에 보관할 때 사용하세요.</p>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" id="btnBackupZip">전체 백업(ZIP) 받기</button>
+        <button class="btn ghost" id="btnBackupJson">기록만 받기(JSON)</button>
+      </div>
+    </div>
+    <div class="block">
+      <h2>복원하기</h2>
+      <p class="hint">백업 파일을 고르면 내용을 먼저 보여 줍니다. 확인 전에는 아무것도 바뀌지 않습니다.</p>
+      <label class="btn secondary" style="margin-top:10px;">백업 파일 선택<input type="file" id="restoreJsonInput" accept=".zip,.json,application/zip,application/json" hidden></label>
+      <div id="restorePreview"></div>
+    </div>
+    <div class="block">
+      <h2>저장 위치</h2>
+      <p class="hint">작성한 기록과 사진은 이 브라우저 안의 저장 공간에 있습니다. 휴대폰 갤러리나 Windows 폴더와는 별개입니다.</p>
+      <p class="hint">백업 파일은 <b>다운로드</b> 폴더에 저장됩니다. 휴대폰은 OneDrive 앱의 [+ → 업로드]로, 노트북은 파일 탐색기에서 OneDrive 폴더로 옮겨 보관하세요.</p>
+      <p class="hint">브라우저의 '사이트 데이터 삭제'를 하면 기록이 지워질 수 있으니 백업을 자주 받으세요.</p>
+    </div>
   </div>
 </section>
 
 <!-- ========== 설정 ========== -->
 <section id="page-settings" class="page">
-  <div class="card">
-    <h2>설정</h2>
-    <h3>장소 유형 관리</h3>
-    <div id="placeTypeChips"></div>
-    <div class="row" style="margin-top:8px;">
-      <input type="text" id="newPlaceType" placeholder="새 장소 유형">
-      <button class="btn small" id="btnAddPlaceType">추가</button>
+  <div class="narrow">
+    <div class="block">
+      <h2>장소 종류</h2>
+      <div id="placeTypeChips"></div>
+      <div class="row" style="margin-top:8px;">
+        <input type="text" id="newPlaceType" placeholder="새 장소 종류" class="grow">
+        <button class="btn secondary" id="btnAddPlaceType">추가</button>
+      </div>
     </div>
-    <h3>사진 분류 관리</h3>
-    <div id="mediaCategoryChips"></div>
-    <div class="row" style="margin-top:8px;">
-      <input type="text" id="newMediaCategory" placeholder="새 사진 분류">
-      <button class="btn small" id="btnAddMediaCategory">추가</button>
+    <div class="block">
+      <h2>사진 분류</h2>
+      <div id="mediaCategoryChips"></div>
+      <div class="row" style="margin-top:8px;">
+        <input type="text" id="newMediaCategory" placeholder="새 사진 분류" class="grow">
+        <button class="btn secondary" id="btnAddMediaCategory">추가</button>
+      </div>
     </div>
-    <h3>데이터 초기화</h3>
-    <button class="btn danger small" id="btnResetData">모든 데이터 삭제</button>
+    <div class="block">
+      <h2>데이터 삭제</h2>
+      <p class="hint">이 기기의 모든 기록과 사진을 지웁니다. 먼저 전체 백업을 받아 두세요.</p>
+      <button class="btn danger" id="btnResetData" style="margin-top:8px;">모든 데이터 삭제</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 휴대폰: 더보기 ========== -->
+<section id="page-more" class="page">
+  <div class="narrow more-list">
+    <div class="list-item link" onclick="switchPage('privacy')"><span class="title">개인정보 검토</span><span class="go" id="moreBadgePrivacy"></span></div>
+    <div class="list-item link" onclick="switchPage('blog')"><span class="title">블로그 원고</span><span class="go">›</span></div>
+    <div class="list-item link" onclick="switchPage('backup')"><span class="title">백업·복원</span><span class="go" id="moreBadgeBackup"></span></div>
+    <div class="list-item link" onclick="switchPage('settings')"><span class="title">설정</span><span class="go">›</span></div>
   </div>
 </section>
 
 </main>
+</div>
+
+<!-- 휴대폰: 아래쪽 메뉴 -->
+<nav id="bottomNav" aria-label="주 메뉴">
+  <button data-page="dashboard">홈</button>
+  <button data-page="visitList">기록</button>
+  <button data-page="media">사진</button>
+  <button data-page="checklist">체크리스트</button>
+  <button data-page="more">더보기</button>
+</nav>
+</div>
 
 <!-- 얼굴 감지 결과 오버레이용 캔버스는 동적으로 생성 -->
 
@@ -583,14 +752,27 @@ async function loadMediaCategories() {
 /* ============================================================
    4. 페이지 전환
    ============================================================ */
+const PAGE_TITLES = {
+  dashboard: '홈', newVisit: '방문 기록', visitList: '방문 기록', media: '사진·동영상', checklist: '촬영 체크리스트',
+  privacy: '개인정보 검토', blog: '블로그 원고', backup: '백업·복원', settings: '설정', more: '더보기'
+};
+// 휴대폰 아래쪽 메뉴에서 어느 버튼을 켤지 (하위 화면 → 상위 메뉴)
+const BOTTOM_PARENT = { newVisit: 'visitList', privacy: 'more', blog: 'more', backup: 'more', settings: 'more' };
+let currentPage = 'dashboard';
+
 function switchPage(pageId) {
+  currentPage = pageId;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById('page-' + pageId);
   if (target) target.classList.add('active');
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.page === pageId));
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  // 페이지별 새로고침
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[pageId] || '';
+  document.querySelectorAll('#sidebar button').forEach(b => b.classList.toggle('active', b.dataset.page === pageId));
+  const bottom = BOTTOM_PARENT[pageId] || pageId;
+  document.querySelectorAll('#bottomNav button').forEach(b => b.classList.toggle('active', b.dataset.page === bottom));
+  closeMediaDetail();
+  window.scrollTo({ top: 0 });
   if (pageId === 'dashboard') renderDashboard();
+  if (pageId === 'newVisit') showStep(currentStep);
   if (pageId === 'visitList') renderVisitList();
   if (pageId === 'media') renderMediaPage();
   if (pageId === 'checklist') renderChecklistPage();
@@ -598,42 +780,72 @@ function switchPage(pageId) {
   if (pageId === 'blog') renderBlogPage();
   if (pageId === 'settings') renderSettingsPage();
   if (pageId === 'backup') renderBackupStatus();
+  if (pageId === 'more') renderMorePage();
 }
 
-document.querySelectorAll('#tabs button').forEach(btn => {
+document.querySelectorAll('#sidebar button, #bottomNav button').forEach(btn => {
   btn.addEventListener('click', () => {
-    // 수정 중이던 기록이 '새 기록' 탭에 남아 있지 않도록
-    if (btn.dataset.page === 'newVisit' && document.getElementById('visitId').value) resetVisitForm();
+    if (btn.dataset.page === 'newVisit') { startNewVisit(); return; }
     switchPage(btn.dataset.page);
   });
 });
+
+// 새 기록 시작: 수정 중이던 기록이 남아 있으면 비우고 1단계부터
+function startNewVisit() {
+  if (document.getElementById('visitId').value) { resetVisitForm(); clearFormDraft(); }
+  currentStep = 1;
+  switchPage('newVisit');
+}
 
 /* ============================================================
    5. 대시보드
    ============================================================ */
 async function renderDashboard() {
-  const visits = await dbGetAll('visits');
-  const media = await dbGetAll('media');
-  const approved = media.filter(m => m.publicStatus === 'approved');
-  document.getElementById('statVisits').textContent = visits.length;
-  document.getElementById('statMedia').textContent = media.length;
-  document.getElementById('statApproved').textContent = approved.length;
+  const [visits, media, drafts] = await Promise.all([dbGetAll('visits'), dbGetAll('media'), dbGetAll('blogDrafts')]);
+  const lastZip = await getSettings('lastBackup_zip', '');
+  const photos = media.filter(m => m.type === 'photo');
+  const todo = photos.filter(m => statusOf(m) === 'review').length;
+  const privacy = photos.filter(m => ['detected', 'check'].includes(statusOf(m))).length;
+  const nameOf = id => (visits.find(v => v.id === id) || {}).placeName || '';
+  const latestDraft = drafts.filter(d => d.draft).sort((a, b) => (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || ''))[0];
+  const days = lastZip ? Math.floor((Date.now() - new Date(lastZip)) / 86400000) : null;
+  const rows = [];
+  if (todo) rows.push({ t: '정리 안 된 사진', m: '분류·설명을 아직 안 한 사진', c: `${todo}장`, go: "openMediaFiltered('todo')" });
+  if (privacy) rows.push({ t: '개인정보 확인이 필요한 사진', m: '얼굴 감지 결과 확인·가림 처리', c: `${privacy}장`, go: "switchPage('privacy')" });
+  if (latestDraft) rows.push({ t: '작성 중인 원고', m: nameOf(latestDraft.visitId) || '원고', c: fmtDate(latestDraft.updatedAt || latestDraft.createdAt).slice(5, 10).replace('-', '/'),
+    go: `openBlogFor('${latestDraft.visitId}')` });
+  rows.push({ t: '마지막 전체 백업', m: lastZip ? fmtDate(lastZip) : '아직 백업하지 않았습니다',
+    c: lastZip ? (days === 0 ? '오늘' : `${days}일 전`) : '', warn: visits.length && (days === null || days > 14), go: "switchPage('backup')" });
+  document.getElementById('todoList').innerHTML = rows.map(r => `
+    <div class="list-item link" onclick="${r.go}">
+      <div><div class="title">${escapeHtml(r.t)}</div><div class="meta${r.warn ? ' warn' : ''}">${escapeHtml(r.m)}${r.warn ? ' · 백업을 권장합니다' : ''}</div></div>
+      <span class="count">${escapeHtml(r.c)}</span>
+    </div>`).join('');
 
-  visits.sort((a,b) => (b.visitDate || '').localeCompare(a.visitDate || ''));
-  const recent = visits.slice(0, 5);
+  visits.sort((a, b) => (b.visitDate || '').localeCompare(a.visitDate || ''));
   const container = document.getElementById('recentVisits');
-  if (recent.length === 0) {
-    container.innerHTML = '<div class="empty">아직 기록이 없습니다. 새 기록을 추가해보세요.</div>';
-  } else {
-    container.innerHTML = recent.map(v => `
-      <div class="list-item" onclick="editVisit('${v.id}')" style="cursor:pointer;">
-        <div>
-          <div class="title">${escapeHtml(v.placeName)}</div>
-          <div class="meta">${v.visitDate || ''} · ${escapeHtml(v.placeType || '')} ${v.region ? '· ' + escapeHtml(v.region) : ''}</div>
-        </div>
-        <span style="font-size:12px;color:var(--primary);">보기 →</span>
-      </div>`).join('');
-  }
+  container.innerHTML = visits.length === 0 ? '<div class="empty">아직 기록이 없습니다.</div>' : visits.slice(0, 5).map(v => {
+    const n = media.filter(m => m.visitId === v.id).length;
+    return `<div class="list-item link" onclick="editVisit('${v.id}')">
+      <div><div class="title">${escapeHtml(v.placeName)}</div>
+      <div class="meta">${escapeHtml(v.visitDate || '')}${v.region ? ' · ' + escapeHtml(v.region) : ''} · 사진·영상 ${n}</div></div>
+      <span class="go">›</span></div>`;
+  }).join('');
+}
+
+function selectVisitEverywhere(visitId) {
+  try { sessionStorage.setItem('selectedVisitId', visitId); } catch (_) {}
+  ['mediaVisitSelect','checklistVisitSelect','privacyVisitSelect','blogVisitSelect'].forEach(id => { const el = document.getElementById(id); if (el) el.value = visitId; });
+}
+function openMediaFiltered(filter) { document.getElementById('mediaFilter').value = filter; switchPage('media'); }
+function openBlogFor(visitId) { selectVisitEverywhere(visitId); switchPage('blog'); }
+
+async function renderMorePage() {
+  const media = await dbGetAll('media');
+  const n = media.filter(m => ['detected', 'check'].includes(statusOf(m))).length;
+  document.getElementById('moreBadgePrivacy').textContent = n ? `확인 필요 ${n}장 ›` : '›';
+  const z = await getSettings('lastBackup_zip', '');
+  document.getElementById('moreBadgeBackup').textContent = z ? `${fmtDate(z).slice(0, 10)} ›` : '백업 없음 ›';
 }
 
 /* ============================================================
@@ -662,12 +874,18 @@ async function populatePlaceTypeSelect() {
   sel.innerHTML = types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
 }
 
-document.getElementById('btnSaveVisit').addEventListener('click', async () => {
+// 저장: 성공하면 기록 id를 돌려줌. 화면은 그대로 두어 이어서 입력 가능
+async function saveVisit() {
   const id = document.getElementById('visitId').value || uid();
   const placeName = document.getElementById('vPlaceName').value.trim();
-  if (!placeName) { showToast('장소명을 입력하세요.'); return; }
   const visitDate = document.getElementById('vVisitDate').value;
-  if (!visitDate) { showToast('방문 날짜를 입력하세요.'); return; }
+  if (!placeName || !visitDate) {
+    showToast(!placeName ? '장소 이름을 입력하세요. (1단계)' : '방문 날짜를 입력하세요. (1단계)', 2500);
+    showStep(1);
+    document.getElementById(!placeName ? 'vPlaceName' : 'vVisitDate').focus();
+    return null;
+  }
+  const prev = await dbGet('visits', id);
 
   const visit = {
     id, placeName,
@@ -694,6 +912,7 @@ document.getElementById('btnSaveVisit').addEventListener('click', async () => {
     recommend: document.getElementById('vRecommend').value,
     revisit: document.getElementById('vRevisit').value,
     memo: document.getElementById('vMemo').value,
+    createdAt: prev?.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
 
@@ -702,14 +921,95 @@ document.getElementById('btnSaveVisit').addEventListener('click', async () => {
     await dbPut('visits', visit);
     clearFormDraft();
     setSaveStatus('저장됨 ✓', 'saved');
-    showToast('방문 기록이 저장되었습니다.');
-    resetVisitForm();
-    switchPage('visitList');
+    document.getElementById('visitId').value = id;
+    document.getElementById('visitFormTitle').textContent = '방문 기록 수정 · ' + placeName;
+    selectVisitEverywhere(id);
+    await populateVisitSelects();
+    return id;
   } catch (err) {
     setSaveStatus('저장 실패', 'error');
-    showToast('저장 실패: ' + err.message);
+    showToast('저장 실패: ' + err.message, 4000);
+    return null;
+  }
+}
+document.getElementById('btnSaveVisit').addEventListener('click', async () => {
+  if (await saveVisit()) showToast('저장했습니다. 이어서 입력할 수 있습니다.');
+});
+
+/* [UI] 방문 기록 6단계 입력 */
+let currentStep = 1;
+const LAST_STEP = 6;
+function showStep(n) {
+  currentStep = Math.min(LAST_STEP, Math.max(1, n));
+  document.querySelectorAll('#page-newVisit .step').forEach(el => el.classList.toggle('on', +el.dataset.step === currentStep));
+  document.querySelectorAll('#stepNav button').forEach(b => {
+    b.classList.toggle('on', +b.dataset.step === currentStep);
+    b.classList.toggle('done', +b.dataset.step < currentStep);
+  });
+  document.querySelector(`#stepNav button[data-step="${currentStep}"]`)?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  document.getElementById('btnStepPrev').disabled = currentStep === 1;
+  document.getElementById('btnStepNext').textContent = currentStep === LAST_STEP ? '저장하고 완료' : '다음';
+  if (currentStep === 5) renderStepMedia();
+  if (currentStep === 6) renderVisitSummary();
+  if (currentPage === 'newVisit') window.scrollTo({ top: 0 });
+}
+document.querySelectorAll('#stepNav button').forEach(b => b.addEventListener('click', () => showStep(+b.dataset.step)));
+document.getElementById('btnStepPrev').addEventListener('click', () => showStep(currentStep - 1));
+document.getElementById('btnStepNext').addEventListener('click', async () => {
+  if (currentStep === 1 && !document.getElementById('vPlaceName').value.trim()) {
+    showToast('장소 이름을 입력하세요.'); document.getElementById('vPlaceName').focus(); return;
+  }
+  if (currentStep < LAST_STEP) { showStep(currentStep + 1); return; }
+  if (await saveVisit()) {
+    showToast('방문 기록을 저장했습니다.');
+    resetVisitForm(); currentStep = 1;
+    switchPage('visitList');
   }
 });
+
+async function renderStepMedia() {
+  const id = document.getElementById('visitId').value;
+  const box = document.getElementById('stepMediaSummary');
+  if (!id) { box.innerHTML = '<p class="meta">아직 연결된 사진이 없습니다.</p>'; return; }
+  const list = sortMedia((await dbGetAll('media')).filter(m => m.visitId === id));
+  releaseUrls();
+  const photos = list.filter(m => m.type === 'photo').length, videos = list.length - photos;
+  box.innerHTML = list.length === 0 ? '<p class="meta">아직 연결된 사진이 없습니다.</p>' : `
+    <p class="meta">사진 ${photos}장 · 동영상 ${videos}개 연결됨 · 분류와 설명은 [사진] 화면에서 정리하세요.</p>
+    <div class="photo-grid">${list.slice(0, 12).map(m => tileHtml(m, false)).join('')}</div>
+    ${list.length > 12 ? `<p class="meta">외 ${list.length - 12}개</p>` : ''}
+    <p><button class="btn ghost" onclick="selectVisitEverywhere('${id}');switchPage('media')">사진 화면에서 정리하기 ›</button></p>`;
+}
+async function addMediaFromStep(files, type) {
+  if (!files || !files.length) return;
+  const id = await saveVisit();
+  if (!id) return;
+  await handleMediaFiles(files, type, id);
+  renderStepMedia();
+}
+document.getElementById('stepPhotoInput').addEventListener('change', e => { addMediaFromStep([...e.target.files], 'photo'); e.target.value = ''; });
+document.getElementById('stepVideoInput').addEventListener('change', e => { addMediaFromStep([...e.target.files], 'video'); e.target.value = ''; });
+
+async function renderVisitSummary() {
+  const g = id => document.getElementById(id).value.trim();
+  const rows = [
+    [1, '장소', g('vPlaceName'), true], [1, '방문 날짜', g('vVisitDate') + (g('vVisitTime') ? ' ' + g('vVisitTime') : ''), true],
+    [1, '종류·지역', [g('vPlaceType'), g('vRegion')].filter(Boolean).join(' · ')], [1, '방문 계기', g('vReason')],
+    [2, '예약·요금', [g('vReservation'), g('vFee')].filter(Boolean).join('\n')], [2, '운영 시간', g('vHours')],
+    [2, '주차·교통', [g('vParking'), g('vTransit')].filter(Boolean).join('\n')],
+    [3, '이용 시설', g('vFacilities')], [3, '보호자 편의', g('vConvenience')],
+    [4, '체험 내용', g('vExperience')], [4, '좋았던 점', g('vPros')], [4, '아쉬웠던 점', g('vCons')], [4, '재방문', g('vRevisit')]
+  ];
+  const id = g('visitId');
+  const n = id ? (await dbGetAll('media')).filter(m => m.visitId === id).length : 0;
+  const missingReq = rows.filter(r => r[3] && !r[2].trim());
+  document.getElementById('visitSummary').innerHTML = `
+    ${missingReq.length ? `<p class="warn-box">필수 항목이 비어 있습니다: ${missingReq.map(r => r[1]).join(', ')}</p>` : ''}
+    <table class="summary-table">${rows.map(([st, k, v]) => `<tr><th>${k}</th><td class="${v ? '' : 'missing'}">${v ? escapeHtml(v.length > 120 ? v.slice(0, 120) + '…' : v)
+      : `비어 있음 · <a href="#" onclick="showStep(${st});return false;">${st}단계에서 입력</a>`}</td></tr>`).join('')}
+      <tr><th>사진·영상</th><td>${n}개 연결됨</td></tr></table>
+    <p class="hint">비어 있는 항목은 원고에서 빠집니다. 나중에 노트북에서 보완해도 됩니다.</p>`;
+}
 
 function resetVisitForm() {
   document.getElementById('visitId').value = '';
@@ -717,7 +1017,6 @@ function resetVisitForm() {
   document.getElementById('vRevisit').value = '';
   document.getElementById('vVisitDate').value = todayStr();
   document.getElementById('visitFormTitle').textContent = '새 방문 기록';
-  document.getElementById('btnSaveVisit').textContent = '저장';
 }
 
 /* [추가] 입력 중 임시 저장: 브라우저가 닫히거나 탭을 옮겨도 쓰던 내용이 남도록 */
@@ -738,8 +1037,7 @@ function restoreFormDraft() {
   if (!d || !d.values || !(d.values.vPlaceName || d.values.vExperience || d.values.vMemo)) return false;
   VISIT_FORM_IDS.forEach(id => { const el = document.getElementById(id); if (el && d.values[id] != null) el.value = d.values[id]; });
   if (d.values.visitId) {
-    document.getElementById('visitFormTitle').textContent = '방문 기록 수정 (저장 안 된 내용)';
-    document.getElementById('btnSaveVisit').textContent = '수정 저장';
+    document.getElementById('visitFormTitle').textContent = '방문 기록 수정 (저장 안 된 내용 있음)';
   }
   return true;
 }
@@ -768,8 +1066,9 @@ async function editVisit(id) {
   Object.entries(map).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val || ''; });
   await populatePlaceTypeSelect();
   document.getElementById('vPlaceType').value = v.placeType || '기타';
-  document.getElementById('visitFormTitle').textContent = '방문 기록 수정';
-  document.getElementById('btnSaveVisit').textContent = '수정 저장';
+  document.getElementById('visitFormTitle').textContent = '방문 기록 수정 · ' + (v.placeName || '');
+  selectVisitEverywhere(v.id);
+  currentStep = 1;
   switchPage('newVisit');
 }
 
@@ -794,24 +1093,26 @@ async function renderVisitList() {
   if (filterType) filtered = filtered.filter(v => v.placeType === filterType);
 
   if (filtered.length === 0) {
-    container.innerHTML = '<div class="card"><div class="empty">기록이 없습니다.</div></div>';
+    container.innerHTML = `<div class="empty">${visits.length ? '찾는 기록이 없습니다.' : '아직 기록이 없습니다. 아래 [새 방문 기록]을 누르세요.'}</div>`;
     return;
   }
-
-  container.innerHTML = filtered.map(v => `
-    <div class="card">
-      <div class="list-item">
-        <div>
-          <div class="title">${escapeHtml(v.placeName)}</div>
-          <div class="meta">${v.visitDate || ''} · ${escapeHtml(v.placeType || '')} ${v.region ? '· ' + escapeHtml(v.region) : ''}</div>
-          ${v.pros ? `<div class="meta" style="margin-top:4px;">${escapeHtml(v.pros).slice(0,60)}</div>` : ''}
-        </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;">
-          <button class="btn small secondary" onclick="editVisit('${v.id}')">수정</button>
-          <button class="btn small danger" onclick="deleteVisit('${v.id}')">삭제</button>
-        </div>
+  const media = await dbGetAll('media');
+  container.innerHTML = filtered.map(v => {
+    const ms = media.filter(m => m.visitId === v.id);
+    const need = ms.filter(m => ['review', 'detected', 'check'].includes(statusOf(m)) && m.type === 'photo').length;
+    return `
+    <div class="list-item">
+      <div class="link" style="flex:1;min-width:0;cursor:pointer;" onclick="editVisit('${v.id}')">
+        <div class="title">${escapeHtml(v.placeName)}</div>
+        <div class="meta">${escapeHtml(v.visitDate || '')} · ${escapeHtml(v.placeType || '')}${v.region ? ' · ' + escapeHtml(v.region) : ''}</div>
+        <div class="meta">사진·영상 ${ms.length}${need ? ` · <span class="warn">검토 필요 ${need}</span>` : ''}</div>
       </div>
-    </div>`).join('');
+      <div class="row tight" style="flex-shrink:0;">
+        <button class="btn small secondary" onclick="selectVisitEverywhere('${v.id}');switchPage('media')">사진</button>
+        <button class="btn small ghost" onclick="deleteVisit('${v.id}')" style="color:var(--danger)">삭제</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function deleteVisit(id) {
@@ -844,85 +1145,192 @@ document.getElementById('filterType')?.addEventListener('change', renderVisitLis
    7. 사진·동영상 관리
    ============================================================ */
 /* [수정] 사진 검토 상태 5단계 (요구사항 7장) */
+/* 사진 검토 상태 (저장값은 그대로, 'detected'만 새로 추가) */
 const MEDIA_STATUS = {
   review:   '검토 전',
-  check:    '개인정보 확인 필요',
+  detected: '얼굴 감지 결과 확인',
+  check:    '가림 처리 필요',
   masked:   '가림 처리 완료',
-  approved: '게시 가능 승인',
-  excluded: '블로그 사용 제외'
+  approved: '게시 가능',
+  excluded: '게시 제외'
 };
 function statusOf(m) { return MEDIA_STATUS[m.publicStatus] ? m.publicStatus : 'review'; }
+function stHtml(m) { const k = statusOf(m); return `<span class="st ${k}">${MEDIA_STATUS[k]}</span>`; }
 function sortMedia(list) {
   return list.sort((a, b) => (a.order ?? 1e9) - (b.order ?? 1e9) || (a.createdAt || '').localeCompare(b.createdAt || ''));
 }
 // 화면을 다시 그릴 때 이전 미리보기 URL을 해제해 휴대폰 메모리 누수를 막음
 let objectUrls = [];
 function blobUrl(blob) { const u = URL.createObjectURL(blob); objectUrls.push(u); return u; }
-function releaseUrls() { objectUrls.forEach(u => URL.revokeObjectURL(u)); objectUrls = []; }
+// 바로 해제하면 아직 불러오는 중인 미리보기가 깨질 수 있어 잠시 뒤 해제
+function releaseUrls() { const old = objectUrls; objectUrls = []; setTimeout(() => old.forEach(u => URL.revokeObjectURL(u)), 5000); }
 function fmtDate(iso) { return iso ? iso.replace('T', ' ').slice(0, 16) : ''; }
+function hasFile(m) { return !m._missingBlob && m.blob && m.blob.size > 0; }
+
+/* [UI] 사진 관리: 썸네일 격자 + 상세 편집 + 여러 장 일괄 처리 */
+const mediaUi = { current: null, selectMode: false, selected: new Set() };
+
+function tileHtml(m, interactive = true) {
+  const k = statusOf(m);
+  const img = !hasFile(m) ? '<span class="img missing">파일 없음</span>'
+    : m.type === 'video' ? `<video class="img" src="${blobUrl(m.blob)}#t=0.5" muted preload="metadata" playsinline></video>`
+    : `<img class="img" src="${blobUrl(m.blob)}" alt="" loading="lazy">`;
+  const cls = ['tile', mediaUi.selected.has(m.id) ? 'selected' : '', mediaUi.current === m.id && !mediaUi.selectMode ? 'current' : '', k === 'excluded' ? 'dim' : ''].join(' ');
+  return `<button type="button" class="${cls}" data-id="${m.id}" ${interactive ? `onclick="onTileClick('${m.id}')"` : 'tabindex="-1"'}>
+    ${img}${m.type === 'video' ? '<span class="vid">영상</span>' : ''}${mediaUi.selectMode ? '<span class="sel"></span>' : ''}
+    <span class="cap">${stHtml(m)}<span class="name">${escapeHtml(m.category || '')}${m.description ? ' · ' + escapeHtml(m.description) : ''}</span></span>
+  </button>`;
+}
+
+function filterMedia(list, f) {
+  if (f === 'todo') return list.filter(m => statusOf(m) === 'review');
+  if (f === 'privacy') return list.filter(m => ['detected', 'check'].includes(statusOf(m)));
+  if (f === 'approved') return list.filter(m => statusOf(m) === 'approved');
+  if (f === 'excluded') return list.filter(m => statusOf(m) === 'excluded');
+  if (f === 'video') return list.filter(m => m.type === 'video');
+  return list;
+}
 
 async function renderMediaPage() {
   await populateVisitSelects();
   const visitId = document.getElementById('mediaVisitSelect').value;
   const container = document.getElementById('mediaListContainer');
   if (!visitId) {
-    container.innerHTML = '<div class="empty">방문 기록을 선택하세요.</div>';
+    container.innerHTML = '<div class="empty">위에서 방문 기록을 고르세요.</div>';
+    document.getElementById('mediaDetail').innerHTML = '';
     return;
   }
-  const media = sortMedia((await dbGetAll('media')).filter(m => m.visitId === visitId));
-  if (media.length === 0) {
-    container.innerHTML = '<div class="empty">아직 사진·동영상이 없습니다. 위에서 추가하세요.</div>';
-    return;
-  }
+  const all = sortMedia((await dbGetAll('media')).filter(m => m.visitId === visitId));
+  const f = document.getElementById('mediaFilter').value;
+  const list = filterMedia(all, f);
   releaseUrls();
-  const categories = await loadMediaCategories();
-  const statusOpts = (cur) => Object.entries(MEDIA_STATUS)
-    .map(([k, t]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${t}</option>`).join('');
-  container.innerHTML = media.map((m, idx) => {
-    const st = statusOf(m);
-    const missing = m._missingBlob || !m.blob || m.blob.size === 0;
-    const thumb = missing
-      ? '<div class="thumb missing">파일 없음</div>'
-      : m.type === 'video'
-        ? `<video class="thumb" src="${blobUrl(m.blob)}" muted preload="metadata" controls></video>`
-        : `<img class="thumb" src="${blobUrl(m.blob)}" alt="" loading="lazy">`;
-    const notes = [];
-    if (m.editedFrom) notes.push('가림 편집본');
-    if (m.exif && m.exif.hasGps) notes.push('<b class="warn">GPS 위치정보 포함</b>');
-    if (m.isCover) notes.push('<b>대표 사진</b>');
-    return `
-    <div class="media-row st-${st}">
-      ${thumb}
-      <div class="media-fields">
-        <div class="fname">${idx + 1}. ${escapeHtml(m.fileName || '파일')}</div>
-        <div class="meta">${m.type === 'video' ? '동영상' : '사진'} · 촬영 ${escapeHtml(m.exif?.dateTaken || fmtDate(m.lastModified) || '정보 없음')}${notes.length ? ' · ' + notes.join(' · ') : ''}</div>
-        <div class="row tight">
-          <select onchange="updateMediaField('${m.id}','category',this.value)" aria-label="분류">
-            ${categories.map(c => `<option value="${escapeHtml(c)}" ${m.category === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
-          </select>
-          <select onchange="changeMediaStatus('${m.id}',this.value)" aria-label="검토 상태">${statusOpts(st)}</select>
-        </div>
-        <input type="text" placeholder="${m.type === 'video' ? '영상 설명 / 대표 장면' : '사진 설명 (블로그 캡션에 사용)'}" value="${escapeHtml(m.description || '')}"
-          onchange="updateMediaField('${m.id}','description',this.value)">
-        <div class="row tight actions">
-          <button class="btn small secondary" onclick="moveMedia('${m.id}',-1)" ${idx === 0 ? 'disabled' : ''}>위로</button>
-          <button class="btn small secondary" onclick="moveMedia('${m.id}',1)" ${idx === media.length - 1 ? 'disabled' : ''}>아래로</button>
-          ${m.type === 'photo' ? `<button class="btn small secondary" onclick="setCover('${m.id}')">${m.isCover ? '대표 ✓' : '대표로'}</button>` : ''}
-          ${m.type === 'photo' && !missing ? `<button class="btn small secondary" onclick="switchPage('privacy');setTimeout(()=>openFaceEditor('${m.id}'),50)">가림</button>` : ''}
-          <button class="btn small danger" onclick="deleteMedia('${m.id}')">삭제</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  const photos = all.filter(m => m.type === 'photo').length;
+  container.innerHTML = all.length === 0
+    ? '<div class="empty">아직 사진·동영상이 없습니다. [사진 추가]로 여러 장을 한 번에 고를 수 있습니다.</div>'
+    : `<p class="meta" style="margin:10px 0 0;">사진 ${photos} · 동영상 ${all.length - photos}${f ? ` · 이 조건 ${list.length}개` : ''}
+       ${mediaUi.selectMode ? ' · <b>선택할 사진을 누르세요</b>' : ''}</p>
+       ${list.length ? `<div class="photo-grid">${list.map(m => tileHtml(m)).join('')}</div>` : '<div class="empty">이 조건에 맞는 항목이 없습니다.</div>'}`;
+  if (mediaUi.current && !all.some(m => m.id === mediaUi.current)) mediaUi.current = null;
+  if (!mediaUi.current && window.matchMedia('(min-width: 1024px)').matches && list.length) mediaUi.current = list[0].id;
+  renderBulkBar();
+  renderMediaDetail();
+}
+document.getElementById('mediaFilter').addEventListener('change', renderMediaPage);
+
+function onTileClick(id) {
+  if (mediaUi.selectMode) {
+    mediaUi.selected.has(id) ? mediaUi.selected.delete(id) : mediaUi.selected.add(id);
+    document.querySelector(`.tile[data-id="${id}"]`)?.classList.toggle('selected', mediaUi.selected.has(id));
+    renderBulkBar();
+    return;
+  }
+  mediaUi.current = id;
+  document.querySelectorAll('#mediaListContainer .tile').forEach(t => t.classList.toggle('current', t.dataset.id === id));
+  renderMediaDetail(true);
 }
 
-async function updateMediaField(id, field, value) {
+async function renderMediaDetail(open = false) {
+  const box = document.getElementById('mediaDetail');
+  const m = mediaUi.current ? await dbGet('media', mediaUi.current) : null;
+  if (!m) { box.innerHTML = '<p class="meta" style="padding-top:12px;">사진을 누르면 설명·분류·상태를 편집합니다.</p>'; box.classList.remove('open'); return; }
+  const categories = await loadMediaCategories();
+  const all = sortMedia((await dbGetAll('media')).filter(x => x.visitId === m.visitId));
+  const idx = all.findIndex(x => x.id === m.id);
+  const orig = m.editedFrom ? all.find(x => x.id === m.editedFrom) : null;
+  const edits = all.filter(x => x.editedFrom === m.id);
+  const url = hasFile(m) ? blobUrl(m.blob) : '';
+  box.innerHTML = `
+    <div class="detail-head">
+      <b>${idx + 1} / ${all.length}</b>
+      <span class="row tight">
+        <button class="btn small secondary" onclick="stepDetail(-1)" ${idx <= 0 ? 'disabled' : ''}>‹ 이전</button>
+        <button class="btn small secondary" onclick="stepDetail(1)" ${idx >= all.length - 1 ? 'disabled' : ''}>다음 ›</button>
+        <button class="btn small ghost close-detail" onclick="closeMediaDetail()">닫기</button>
+      </span>
+    </div>
+    ${!url ? '<div class="empty">파일이 없습니다. ZIP 백업으로 복원하세요.</div>'
+      : m.type === 'video' ? `<video class="detail-preview" src="${url}" controls playsinline></video>`
+      : `<img class="detail-preview" src="${url}" alt="">`}
+    <p class="kv" style="margin-top:10px;">${m.editedFrom ? '<span class="tag edited">편집본</span> ' : '<span class="tag">원본</span> '}${m.exif?.hasGps ? '<span class="tag gps">GPS 위치정보</span> ' : ''}${escapeHtml(m.fileName || '')}</p>
+    <p class="kv"><span>촬영</span> ${escapeHtml(m.exif?.dateTaken || fmtDate(m.lastModified) || '정보 없음')}</p>
+    ${orig ? `<p class="kv"><span>원본</span> <a href="#" onclick="onTileClick('${orig.id}');return false;">${escapeHtml(orig.fileName || '')}</a></p>` : ''}
+    ${edits.length ? `<p class="kv"><span>편집본</span> ${edits.map(e => `<a href="#" onclick="onTileClick('${e.id}');return false;">${escapeHtml(e.fileName || '')}</a>`).join(', ')}</p>` : ''}
+    <label>설명 <span class="opt">원고 사진 캡션으로 쓰임</span></label>
+    <textarea id="dDesc" style="min-height:64px;" placeholder="${m.type === 'video' ? '영상 내용·대표 장면' : '예: 입구 옆 유아차 보관 공간'}">${escapeHtml(m.description || '')}</textarea>
+    <label>시설 분류</label>
+    <select id="dCat">${categories.map(c => `<option ${m.category === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}</select>
+    <label>검토 상태</label>
+    <select id="dStatus">${Object.entries(MEDIA_STATUS).map(([k, t]) => `<option value="${k}" ${statusOf(m) === k ? 'selected' : ''}>${t}</option>`).join('')}</select>
+    <div class="row tight" style="margin-top:14px;">
+      ${m.type === 'photo' && url ? `<button class="btn secondary small" onclick="openPrivacyFor('${m.id}')">가림 처리</button>` : ''}
+      ${m.type === 'photo' ? `<button class="btn secondary small" onclick="setCover('${m.id}')">${m.isCover ? '대표 사진 ✓' : '대표 사진으로'}</button>` : ''}
+      <button class="btn secondary small" onclick="moveMedia('${m.id}',-1)" ${idx <= 0 ? 'disabled' : ''}>순서 앞으로</button>
+      <button class="btn secondary small" onclick="moveMedia('${m.id}',1)" ${idx >= all.length - 1 ? 'disabled' : ''}>순서 뒤로</button>
+    </div>
+    <p style="margin-top:18px;"><button class="btn danger small" onclick="deleteMedia('${m.id}')">이 파일 삭제</button></p>`;
+  // 입력하는 동안 자동 저장 (다른 사진으로 넘어가도 내용이 남음)
+  const desc = document.getElementById('dDesc'); let t = null;
+  desc.addEventListener('input', () => { clearTimeout(t); setSaveStatus('저장 중…'); t = setTimeout(() => updateMediaField(m.id, 'description', desc.value), 400); });
+  desc.addEventListener('blur', () => { clearTimeout(t); updateMediaField(m.id, 'description', desc.value); });
+  document.getElementById('dCat').addEventListener('change', e => updateMediaField(m.id, 'category', e.target.value));
+  document.getElementById('dStatus').addEventListener('change', e => changeMediaStatus(m.id, e.target.value));
+  if (open) box.classList.add('open');
+}
+async function stepDetail(dir) {
+  const m = await dbGet('media', mediaUi.current); if (!m) return;
+  const all = sortMedia((await dbGetAll('media')).filter(x => x.visitId === m.visitId));
+  const n = all[all.findIndex(x => x.id === m.id) + dir];
+  if (n) { mediaUi.current = n.id; document.querySelectorAll('#mediaListContainer .tile').forEach(t => t.classList.toggle('current', t.dataset.id === n.id)); renderMediaDetail(true); }
+}
+function closeMediaDetail() { document.getElementById('mediaDetail')?.classList.remove('open'); }
+function openPrivacyFor(id) { closeMediaDetail(); switchPage('privacy'); setTimeout(() => openFaceEditor(id), 50); }
+
+// 여러 장 선택 → 분류 변경 / 가림 필요 / 게시 제외 (게시 가능은 한 장씩 확인 절차를 거치므로 일괄 처리 없음)
+document.getElementById('btnSelectMode').addEventListener('click', () => {
+  mediaUi.selectMode = !mediaUi.selectMode; mediaUi.selected.clear(); closeMediaDetail(); renderMediaPage();
+});
+document.getElementById('btnBulkDone')?.addEventListener('click', () => { mediaUi.selectMode = false; mediaUi.selected.clear(); renderMediaPage(); });
+async function renderBulkBar() {
+  const bar = document.getElementById('bulkBar');
+  bar.hidden = !mediaUi.selectMode;
+  document.getElementById('btnSelectMode').textContent = mediaUi.selectMode ? '선택 취소' : '여러 장 선택';
+  if (!mediaUi.selectMode) return;
+  document.getElementById('bulkCount').textContent = `${mediaUi.selected.size}장 선택`;
+  const sel = document.getElementById('bulkCategory');
+  if (!sel.options.length) sel.innerHTML = '<option value="">분류 변경…</option>' + (await loadMediaCategories()).map(c => `<option>${escapeHtml(c)}</option>`).join('');
+}
+async function bulkUpdate(fn, msg) {
+  if (!mediaUi.selected.size) { showToast('먼저 사진을 고르세요.'); return; }
+  let n = 0;
+  for (const id of mediaUi.selected) { const m = await dbGet('media', id); if (m && fn(m) !== false) { await dbPut('media', m); n++; } }
+  showToast(`${n}개 ${msg}`); setSaveStatus('저장됨 ✓', 'saved');
+  mediaUi.selected.clear(); renderMediaPage();
+}
+document.getElementById('bulkCategory').addEventListener('change', e => {
+  const c = e.target.value; if (!c) return; e.target.value = '';
+  bulkUpdate(m => { m.category = c; }, `'${c}'(으)로 분류했습니다.`);
+});
+document.getElementById('btnBulkCheck').addEventListener('click', () =>
+  bulkUpdate(m => { if (m.type !== 'photo' || statusOf(m) === 'approved') return false; m.publicStatus = 'check'; }, '가림 처리 필요로 표시했습니다.'));
+document.getElementById('btnBulkExclude').addEventListener('click', () => bulkUpdate(m => { m.publicStatus = 'excluded'; }, '게시 제외했습니다.'));
+
+// 설명·분류를 연달아 바꿀 때 서로 덮어쓰지 않도록 저장을 차례대로 처리
+let mediaWriteQueue = Promise.resolve();
+function updateMediaField(id, field, value) {
+  mediaWriteQueue = mediaWriteQueue.then(() => updateMediaFieldNow(id, field, value)).catch(e => console.error(e));
+  return mediaWriteQueue;
+}
+async function updateMediaFieldNow(id, field, value) {
   const m = await dbGet('media', id);
   if (!m) return;
   m[field] = value;
   await dbPut('media', m);
   setSaveStatus('저장됨 ✓', 'saved');
+  // 격자의 해당 칸만 다시 그림 (입력 중인 상세 패널은 그대로)
+  const tile = document.querySelector(`#mediaListContainer .tile[data-id="${id}"]`);
+  if (tile) tile.outerHTML = tileHtml(m);
 }
+function rerenderCurrent() { currentPage === 'privacy' ? renderPrivacyPage() : renderMediaPage(); }
 
 // 순서 변경: 같은 방문 기록 안에서 order 값을 다시 매김
 async function moveMedia(id, dir) {
@@ -953,12 +1361,12 @@ async function changeMediaStatus(id, status) {
   if (!m) return;
   if (status === 'approved') {
     const ok = await confirmApproval(m);
-    if (!ok) { renderMediaPage(); return; }
+    if (!ok) { const sel = document.getElementById('editorStatus'); if (sel) sel.value = statusOf(m); rerenderCurrent(); return; }
   }
   m.publicStatus = status;
   await dbPut('media', m);
   setSaveStatus('저장됨 ✓', 'saved');
-  renderMediaPage();
+  rerenderCurrent();
 }
 
 async function confirmApproval(m) {
@@ -995,8 +1403,8 @@ async function confirmApproval(m) {
 
 document.getElementById('mediaVisitSelect')?.addEventListener('change', renderMediaPage);
 
-async function handleMediaFiles(files, type) {
-  const visitId = document.getElementById('mediaVisitSelect').value;
+async function handleMediaFiles(files, type, visitIdOverride) {
+  const visitId = visitIdOverride || document.getElementById('mediaVisitSelect').value;
   if (!visitId) { showToast('먼저 방문 기록을 선택하세요.'); return; }
   if (!files || files.length === 0) return;
 
@@ -1005,6 +1413,7 @@ async function handleMediaFiles(files, type) {
   const existing = (await dbGetAll('media')).filter(m => m.visitId === visitId);
   let order = existing.length;
   for (const file of files) {
+    setSaveStatus(`저장 중… ${count + 1}/${files.length}`);
     const exif = type === 'photo' ? await readExif(file) : null;
     const record = {
       id: uid(),
@@ -1092,7 +1501,8 @@ async function deleteMedia(id) {
   if (!ok) return;
   await dbDelete('media', id);
   showToast('삭제되었습니다.');
-  renderMediaPage();
+  if (mediaUi.current === id) { mediaUi.current = null; closeMediaDetail(); }
+  rerenderCurrent();
 }
 
 /* ============================================================
@@ -1139,16 +1549,53 @@ async function renderChecklistPage() {
     items = (await dbGetAll('checklists')).filter(c => c.visitId === visitId);
   }
   const phases = ['방문 전', '방문 현장', '영상'];
-  container.innerHTML = phases.map(phase => {
+  const done = items.filter(i => i.checked).length;
+  const media = (await dbGetAll('media')).filter(m => m.visitId === visitId);
+  container.innerHTML = `<p class="meta" style="margin-top:10px;">${done} / ${items.length} 완료 · 항목 옆 [촬영]을 누르면 사진·영상이 이 기록에 바로 추가됩니다.</p>` +
+    phases.map(phase => {
     const phaseItems = items.filter(i => i.phase === phase);
     if (phaseItems.length === 0) return '';
-    return `<h3>${phase}</h3>` + phaseItems.map(i => `
+    return `<h3>${phase}</h3>` + phaseItems.map(i => {
+      const n = media.filter(m => m.checklistId === i.id).length;
+      return `
       <div class="checklist-item">
-        <input type="checkbox" ${i.checked ? 'checked' : ''} onchange="toggleChecklist('${i.id}', this.checked)">
-        <div class="label" style="${i.checked ? 'text-decoration:line-through;color:var(--text-sub);' : ''}">${escapeHtml(i.label)}</div>
-        <button class="btn small secondary" onclick="deleteChecklist('${i.id}')" style="padding:2px 6px;font-size:11px;">✕</button>
-      </div>`).join('');
+        <input type="checkbox" ${i.checked ? 'checked' : ''} onchange="toggleChecklist('${i.id}', this.checked)" aria-label="${escapeHtml(i.label)}">
+        <div class="label">
+          <span style="${i.checked ? 'color:var(--sub);text-decoration:line-through;' : ''}">${escapeHtml(i.label)}</span>${n ? ` <span class="meta">· ${n}개</span>` : ''}
+          <input type="text" class="note-input" value="${escapeHtml(i.note || '')}" placeholder="메모" onchange="saveChecklistNote('${i.id}', this.value)"
+            style="margin-top:4px;padding:5px 8px;font-size:14px;${i.note ? '' : 'display:none;'}">
+        </div>
+        <span class="row tight" style="flex-shrink:0;">
+          <label class="btn small secondary">촬영<input type="file" accept="${phase === '영상' ? 'video/*' : 'image/*'}" multiple hidden
+            onchange="addChecklistMedia('${i.id}', [...this.files], '${phase === '영상' ? 'video' : 'photo'}'); this.value='';"></label>
+          <button class="btn small ghost" onclick="this.closest('.checklist-item').querySelector('.note-input').style.display='block';this.closest('.checklist-item').querySelector('.note-input').focus();">메모</button>
+          <button class="btn small ghost" onclick="deleteChecklist('${i.id}')" aria-label="항목 삭제" style="color:var(--sub)">✕</button>
+        </span>
+      </div>`; }).join('');
   }).join('');
+}
+
+// 체크리스트 항목 → 사진 분류 추정 (맞는 분류가 없으면 '기타')
+const CHECK_TO_CATEGORY = [['주차', '주차장'], ['교통', '대중교통 및 접근 경로'], ['위치', '대중교통 및 접근 경로'], ['외관', '외부 전경'],
+  ['간판', '간판 및 입구'], ['입구', '간판 및 입구'], ['진입', '간판 및 입구'], ['내부 전체', '내부 전체 모습'], ['주요 시설', '놀이시설'],
+  ['시설별', '세부 시설'], ['세부', '세부 시설'], ['보호자', '보호자 공간'], ['화장실', '화장실 및 편의시설'], ['풍경', '주변 풍경'],
+  ['체험', '체험 활동'], ['안내판', '세부 시설'], ['요금', '기타']];
+async function addChecklistMedia(itemId, fileList, type) {
+  const item = await dbGet('checklists', itemId);
+  if (!item || !fileList || !fileList.length) return;
+  const files = [...fileList];
+  const before = new Set((await dbGetAll('media')).map(m => m.id));
+  await handleMediaFiles(files, type, item.visitId);
+  const cat = (CHECK_TO_CATEGORY.find(([k]) => item.label.includes(k)) || [, '기타'])[1];
+  for (const m of (await dbGetAll('media')).filter(m => !before.has(m.id) && m.visitId === item.visitId)) {
+    m.checklistId = itemId; m.category = cat; await dbPut('media', m);
+  }
+  if (!item.checked) { item.checked = true; await dbPut('checklists', item); }
+  renderChecklistPage();
+}
+async function saveChecklistNote(id, note) {
+  const item = await dbGet('checklists', id); if (!item) return;
+  item.note = note; await dbPut('checklists', item); setSaveStatus('저장됨 ✓', 'saved');
 }
 
 document.getElementById('checklistVisitSelect')?.addEventListener('change', renderChecklistPage);
@@ -1179,27 +1626,39 @@ document.getElementById('btnAddChecklist')?.addEventListener('click', async () =
    - 화면에는 축소본을 보여주고, 저장할 때는 원본 크기 캔버스에서 다시 그림 */
 let faceEditorState = { mediaId: null, img: null, canvas: null, areas: [], scale: 1, mode: 'mosaic' };
 
+let privacyFilter = 'need';
+const PRIVACY_FILTERS = [
+  ['need', '확인 필요', m => ['review', 'detected', 'check'].includes(statusOf(m))],
+  ['review', '검토 전', m => statusOf(m) === 'review'],
+  ['detected', '감지 결과 확인', m => statusOf(m) === 'detected'],
+  ['check', '가림 필요', m => statusOf(m) === 'check'],
+  ['masked', '가림 완료', m => statusOf(m) === 'masked'],
+  ['approved', '게시 가능', m => statusOf(m) === 'approved'],
+  ['all', '전체', () => true]
+];
 async function renderPrivacyPage() {
   await populateVisitSelects();
   const visitId = document.getElementById('privacyVisitSelect').value;
   const container = document.getElementById('privacyMediaContainer');
-  const editor = document.getElementById('faceEditorContainer');
-  if (!visitId) {
-    container.innerHTML = '<div class="empty">방문 기록을 선택하세요.</div>';
-    editor.innerHTML = '<div class="empty">위에서 사진을 선택하면 편집 도구가 나타납니다.</div>';
-    return;
-  }
-  const media = sortMedia((await dbGetAll('media')).filter(m => m.visitId === visitId && m.type === 'photo' && m.blob && m.blob.size));
-  if (media.length === 0) {
-    container.innerHTML = '<div class="empty">이 기록에 사진이 없습니다.</div>';
-    return;
-  }
+  const seg = document.getElementById('privacyFilter');
+  if (!visitId) { seg.innerHTML = ''; container.innerHTML = '<div class="empty">위에서 방문 기록을 고르세요.</div>'; return; }
+  const media = sortMedia((await dbGetAll('media')).filter(m => m.visitId === visitId && m.type === 'photo' && hasFile(m)));
+  seg.innerHTML = PRIVACY_FILTERS.map(([k, t, f]) =>
+    `<button type="button" class="${privacyFilter === k ? 'on' : ''}" onclick="privacyFilter='${k}';renderPrivacyPage()">${t}<span class="count">${media.filter(f).length}</span></button>`).join('');
+  const list = media.filter(PRIVACY_FILTERS.find(x => x[0] === privacyFilter)[2]);
   releaseUrls();
-  container.innerHTML = `<div class="thumb-grid">${media.map(m => `
-    <button type="button" class="thumb-btn st-${statusOf(m)}" onclick="openFaceEditor('${m.id}')">
+  if (!media.length) { container.innerHTML = '<div class="empty">이 기록에 사진이 없습니다.</div>'; return; }
+  const byId = Object.fromEntries(media.map(m => [m.id, m]));
+  container.innerHTML = list.length === 0 ? '<div class="empty">이 상태의 사진이 없습니다.</div>' : list.map(m => `
+    <div class="review-row link ${faceEditorState.mediaId === m.id ? 'current' : ''}" style="cursor:pointer;" onclick="openFaceEditor('${m.id}')">
       <img src="${blobUrl(m.blob)}" alt="" loading="lazy">
-      <span>${MEDIA_STATUS[statusOf(m)]}${m.editedFrom ? ' · 편집본' : ''}${m.exif?.hasGps ? ' · GPS' : ''}</span>
-    </button>`).join('')}</div>`;
+      <div class="body">
+        <div class="name">${m.editedFrom ? '<span class="tag edited">편집본</span>' : '<span class="tag">원본</span>'} ${escapeHtml(m.fileName || '')}</div>
+        <div>${stHtml(m)}${m.exif?.hasGps ? ' <span class="tag gps">GPS</span>' : ''}</div>
+        ${m.editedFrom && byId[m.editedFrom] ? `<div class="meta">원본: ${escapeHtml(byId[m.editedFrom].fileName || '')}</div>` : ''}
+      </div>
+      <span class="go">가림 ›</span>
+    </div>`).join('');
 }
 
 document.getElementById('privacyVisitSelect')?.addEventListener('change', renderPrivacyPage);
@@ -1210,8 +1669,11 @@ async function openFaceEditor(mediaId) {
   const m = await dbGet('media', mediaId);
   if (!m || m.type !== 'photo') return;
   const editor = document.getElementById('faceEditorContainer');
+  document.querySelectorAll('#privacyMediaContainer .review-row').forEach(r => r.classList.toggle('current', r.getAttribute('onclick').includes(mediaId)));
   editor.innerHTML = `
-    <p class="meta">${escapeHtml(m.fileName || '')}${m.editedFrom ? ' (편집본)' : ''}</p>
+    <p style="margin:12px 0 6px;">${m.editedFrom ? '<span class="tag edited">편집본</span>' : '<span class="tag">원본</span>'} ${escapeHtml(m.fileName || '')}</p>
+    <div class="row tight" style="margin-bottom:8px;"><span class="meta">검토 상태</span>
+      <select id="editorStatus" style="width:auto;flex:1;">${Object.entries(MEDIA_STATUS).map(([k, t]) => `<option value="${k}" ${statusOf(m) === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
     <canvas id="faceCanvas" class="face-canvas"></canvas>
     <div class="row tight" style="margin-top:10px;">
       <button class="btn small" id="btnDetectFaces">얼굴 자동 감지</button>
@@ -1264,7 +1726,11 @@ async function openFaceEditor(mediaId) {
     canvas.addEventListener('touchend', up);
   };
   img.onerror = () => showToast('사진을 열 수 없습니다. (지원하지 않는 형식일 수 있음)');
-  img.src = blobUrl(m.blob);
+  // 목록을 다시 그려도 편집 중인 사진이 사라지지 않도록 별도 주소 사용
+  if (window._editorUrl) URL.revokeObjectURL(window._editorUrl);
+  window._editorUrl = URL.createObjectURL(m.blob);
+  img.src = window._editorUrl;
+  document.getElementById('editorStatus').onchange = e => changeMediaStatus(mediaId, e.target.value);
 
   document.getElementById('maskMode').onchange = e => { faceEditorState.mode = e.target.value; redrawPreview(); };
   document.getElementById('btnDetectFaces').onclick = detectFaces;
@@ -1345,6 +1811,8 @@ async function detectFaces() {
         width: b.width * (1 + pad * 2) / k, height: b.height * (1 + pad * 2) / k, manual: false });
     });
     redrawPreview();
+    const cur = await dbGet('media', faceEditorState.mediaId);
+    if (cur && faces.length && statusOf(cur) === 'review') { cur.publicStatus = 'detected'; await dbPut('media', cur); renderPrivacyPage(); }
     showToast(faces.length ? `${faces.length}개 얼굴을 찾아 가렸습니다. 놓친 얼굴이 없는지 확인하세요.` : '찾은 얼굴이 없습니다. 직접 확인해 주세요.', 3500);
   } catch (err) {
     console.error(err);
@@ -1411,7 +1879,8 @@ async function saveEditedImage() {
     for (let i = 0; i < list.length; i++) if (list[i].order !== i) { list[i].order = i; await dbPut('media', list[i]); }
     setSaveStatus('저장됨 ✓', 'saved');
     showToast('편집본을 저장했습니다. 원본은 그대로 보관되고 "블로그 사용 제외"로 바뀌었습니다.', 3500);
-    renderPrivacyPage();
+    await renderPrivacyPage();
+    openFaceEditor(edited.id);
   }, 'image/jpeg', 0.92);
 }
 
@@ -1424,14 +1893,14 @@ async function renderBlogPage() {
 }
 document.getElementById('blogVisitSelect')?.addEventListener('change', showSavedDraft);
 
-// 저장된 원고가 있으면 다시 보여 줌 (방문 기록마다 최신 1개 보관)
+// 저장된 원고가 있으면 편집기로 다시 엶 (방문 기록마다 최신 1개 보관)
 async function showSavedDraft() {
   const visitId = document.getElementById('blogVisitSelect').value;
   const box = document.getElementById('blogOutputContainer');
-  if (!visitId) { box.innerHTML = '<div class="empty">방문 기록을 선택하고 원고를 생성하세요.</div>'; return; }
-  const d = await dbGet('blogDrafts', 'draft_' + visitId);
-  if (d && d.draft) renderDraft(d.draft, d.createdAt);
-  else box.innerHTML = '<div class="empty">아직 만든 원고가 없습니다. [원고 생성]을 누르세요.</div>';
+  if (!visitId) { box.innerHTML = '<div class="empty">방문 기록을 고르고 [원고 만들기]를 누르세요.</div>'; return; }
+  const rec = await dbGet('blogDrafts', 'draft_' + visitId);
+  if (rec && rec.draft) openEditor(visitId, rec);
+  else box.innerHTML = '<div class="empty">아직 만든 원고가 없습니다. [원고 만들기]를 누르면 기록과 승인된 사진으로 초안을 만듭니다.</div>';
 }
 
 document.getElementById('btnGenerateBlog')?.addEventListener('click', generateBlogDraft);
@@ -1604,51 +2073,195 @@ const DRAFT_FORMATS = [
   ['md', 'Markdown', draftToMarkdown, 'md'],
   ['html', 'HTML', draftToHtml, 'html']
 ];
+/* [UI] 원고 편집기: 왼쪽 사진 배치 / 가운데 원고 / 오른쪽 캡션·SEO·출력
+   저장 형식은 기존과 같고, 문단별 사진 id(photoIds)와 대표 사진 id(coverId)만 추가로 보관 */
 let currentDraft = null;
+const ed = { visitId: null, rec: null, approved: [], panel: 'main', fmt: 'naver', timer: null };
 
-function renderDraft(d, createdAt) {
-  currentDraft = d;
-  const box = document.getElementById('blogOutputContainer');
-  box.innerHTML = `
-    <h2>생성된 원고</h2>
-    <p class="meta">${createdAt ? '생성: ' + escapeHtml(fmtDate(createdAt)) + ' · ' : ''}사진 ${d.photos.length}장 (게시 가능 승인된 사진만)</p>
-    <div class="seg" role="tablist">${DRAFT_FORMATS.map(([k, label], i) =>
-      `<button type="button" data-fmt="${k}" class="${i === 0 ? 'on' : ''}">${label}</button>`).join('')}</div>
-    <div class="output-box" id="blogOutputText"></div>
-    <div class="row" style="margin-top:10px;">
-      <button class="btn small" id="btnCopyDraft">복사</button>
-      <button class="btn small secondary" id="btnDownloadDraft">파일로 받기</button>
-    </div>
-    <p class="meta" style="margin-top:8px;">기록하지 않은 내용은 만들지 않았습니다. "(직접 작성)" 표시 문단과 [사진 N] 위치에 사진을 넣어 마무리하세요.
-      아이 이름·나이·거주지·기관명이 들어가지 않았는지 게시 전에 다시 확인하세요.</p>`;
-  let fmt = 'naver';
-  const show = () => {
-    const f = DRAFT_FORMATS.find(x => x[0] === fmt);
-    document.getElementById('blogOutputText').textContent = f[2](d);
-    box.querySelectorAll('.seg button').forEach(b => b.classList.toggle('on', b.dataset.fmt === fmt));
+// 문단·사진 배치가 바뀔 때마다 사진 번호와 목록을 다시 매김
+function normalizeDraft(d, approvedById) {
+  const oldCap = Object.fromEntries((d.photos || []).map(p => [p.id, p.caption]));
+  if (d.coverId === undefined) d.coverId = d.coverNo ? (capOf(d, d.coverNo) || {}).id || null : null;
+  d.sections.forEach(x => { if (!x.photoIds) x.photoIds = (x.photoNos || []).map(no => (capOf(d, no) || {}).id).filter(Boolean); });
+  const ok = id => !!approvedById[id];
+  if (d.coverId && !ok(d.coverId)) d.coverId = null;           // 게시 가능이 아닌 사진은 원고에서 뺌
+  d.sections.forEach(x => { x.photoIds = x.photoIds.filter(ok); });
+  let n = 0; const photos = [];
+  const add = (id, section) => {
+    const m = approvedById[id];
+    photos.push({ no: ++n, id, fileName: m.fileName, section, category: m.category,
+      caption: oldCap[id] != null ? oldCap[id] : ((m.description || '').trim() || m.category || '사진') });
+    return n;
   };
-  box.querySelectorAll('.seg button').forEach(b => b.onclick = () => { fmt = b.dataset.fmt; show(); });
-  document.getElementById('btnCopyDraft').onclick = () => copyText(document.getElementById('blogOutputText').textContent);
-  document.getElementById('btnDownloadDraft').onclick = () => {
-    const f = DRAFT_FORMATS.find(x => x[0] === fmt);
-    const type = f[3] === 'html' ? 'text/html' : f[3] === 'md' ? 'text/markdown' : 'text/plain';
-    downloadBlob(new Blob([f[2](d)], { type: type + ';charset=utf-8' }), `blog_${safeName(d.title).slice(0, 20)}_${fmt}.${f[3]}`);
-  };
-  show();
+  d.coverNo = d.coverId ? add(d.coverId, '대표 사진(제목 아래)') : null;
+  d.sections.forEach(x => { x.photoNos = x.photoIds.map(id => add(id, x.heading)); x.todo = !x.text.trim() && x.heading !== '그 외 사진'; });
+  d.photos = photos;
+  return d;
 }
 
-async function generateBlogDraft() {
+function scheduleDraftSave() {
+  setSaveStatus('원고 저장 중…');
+  clearTimeout(ed.timer);
+  ed.timer = setTimeout(async () => {
+    ed.rec = { ...ed.rec, draft: currentDraft, edited: true, updatedAt: new Date().toISOString() };
+    await dbPut('blogDrafts', ed.rec);
+    setSaveStatus('원고 저장됨 ✓', 'saved');
+  }, 500);
+  refreshOutput();
+}
+
+async function openEditor(visitId, rec) {
+  const { approved } = await getVisitAndMedia(visitId);
+  ed.visitId = visitId; ed.rec = rec; ed.approved = approved;
+  const byId = Object.fromEntries(approved.map(m => [m.id, m]));
+  const before = (rec.draft.photos || []).length;
+  currentDraft = normalizeDraft(rec.draft, byId);
+  renderEditor();
+  if (currentDraft.photos.length < before) showToast('게시 가능 상태가 아닌 사진은 원고에서 뺐습니다.', 3500);
+}
+
+function renderEditor() {
+  const d = currentDraft, box = document.getElementById('blogOutputContainer');
+  releaseUrls();
+  const urlOf = Object.fromEntries(ed.approved.map(m => [m.id, blobUrl(m.blob)]));
+  const where = id => d.coverId === id ? 'cover' : String(d.sections.findIndex(x => x.photoIds.includes(id)));
+  const placeOpts = sel => `<option value="-1" ${sel === '-1' ? 'selected' : ''}>배치 안 함</option><option value="cover" ${sel === 'cover' ? 'selected' : ''}>대표(제목 아래)</option>` +
+    d.sections.map((x, i) => `<option value="${i}" ${sel === String(i) ? 'selected' : ''}>${escapeHtml(x.heading)}</option>`).join('');
+  const thumb = id => { const p = d.photos.find(p => p.id === id);
+    return `<div class="ed-photo"><img src="${urlOf[id]}" alt=""><button onclick="placePhoto('${id}','-1')" aria-label="빼기">✕</button>[사진 ${p ? p.no : ''}]</div>`; };
+  const addSel = i => `<select class="ed-add" onchange="placePhoto(this.value,'${i}')"><option value="">+ 사진 넣기</option>${ed.approved.filter(m => where(m.id) !== String(i))
+    .map(m => `<option value="${m.id}">${escapeHtml(m.category || '')} · ${escapeHtml((m.description || m.fileName || '').slice(0, 24))}${where(m.id) !== '-1' ? ' (이동)' : ''}</option>`).join('')}</select>`;
+
+  box.innerHTML = `
+    <p class="meta" style="margin:8px 0 0;">${ed.rec.edited ? '직접 고친 원고 · ' : ''}${escapeHtml(fmtDate(ed.rec.updatedAt || ed.rec.createdAt))} 저장 · 사진 ${d.photos.length}장 (게시 가능 사진만 사용)</p>
+    <div class="seg editor-tabs">
+      <button type="button" data-p="main">원고</button><button type="button" data-p="photos">사진 배치</button><button type="button" data-p="side">캡션·SEO·출력</button>
+    </div>
+    <div class="editor-panels">
+      <div class="panel side" data-p="photos">
+        <h3 style="margin-top:8px;">사진 (${ed.approved.length})</h3>
+        ${ed.approved.length ? ed.approved.map(m => `
+          <div class="side-photo"><img src="${urlOf[m.id]}" alt="">
+            <div class="body"><div class="meta">${escapeHtml(m.category || '')}${m.isCover ? ' · 대표' : ''}</div>
+              <select onchange="placePhoto('${m.id}', this.value)">${placeOpts(where(m.id))}</select></div></div>`).join('')
+          : '<p class="meta">게시 가능한 사진이 없습니다. [사진] 화면에서 검토 후 \'게시 가능\'으로 바꾸세요.</p>'}
+      </div>
+      <div class="panel" data-p="main">
+        <label style="margin-top:8px;">제목</label>
+        <input type="text" class="ed-title" id="edTitle" value="${escapeHtml(d.title)}">
+        ${d.coverId ? `<div class="ed-photos">${thumb(d.coverId)}</div>` : ''}
+        <label>도입</label>
+        <textarea id="edIntro" style="min-height:70px;">${escapeHtml(d.intro || '')}</textarea>
+        ${d.sections.map((x, i) => `
+          <div class="ed-sec">
+            <div class="ed-head"><input type="text" value="${escapeHtml(x.heading)}" data-i="${i}" class="edHead" aria-label="소제목">
+              <button class="btn small ghost" onclick="moveSection(${i},-1)" ${i === 0 ? 'disabled' : ''} aria-label="위로">↑</button>
+              <button class="btn small ghost" onclick="moveSection(${i},1)" ${i === d.sections.length - 1 ? 'disabled' : ''} aria-label="아래로">↓</button>
+              <button class="btn small ghost" onclick="removeSection(${i})" aria-label="문단 삭제" style="color:var(--sub)">✕</button></div>
+            ${x.todo ? '<div class="todo">기록된 내용이 없습니다. 직접 작성하거나 문단을 지우세요.</div>' : ''}
+            <textarea class="edText" data-i="${i}" placeholder="내용">${escapeHtml(x.text)}</textarea>
+            ${x.note ? `<p class="meta">${escapeHtml(x.note)}</p>` : ''}
+            <div class="ed-photos">${x.photoIds.map(thumb).join('')}${ed.approved.length ? addSel(i) : ''}</div>
+          </div>`).join('')}
+        <p><button class="btn ghost" onclick="addSection()">+ 문단 추가</button></p>
+        <div class="actionbar">
+          <button class="btn" onclick="copyText(draftToNaver(currentDraft))">네이버용 복사</button>
+          <button class="btn secondary" onclick="regenerateDraft()">다시 만들기</button>
+        </div>
+      </div>
+      <div class="panel side" data-p="side">
+        <h3 style="margin-top:8px;">사진 캡션</h3>
+        ${d.photos.length ? d.photos.map(p => `<div class="cap-row"><div class="no">[사진 ${p.no}] <span class="meta">${escapeHtml(p.section)}</span></div>
+          <input type="text" value="${escapeHtml(p.caption)}" data-id="${p.id}" class="edCap"></div>`).join('') : '<p class="meta">배치된 사진이 없습니다.</p>'}
+        <h3>제목 후보</h3>
+        ${d.titles.map(t => `<div class="list-item link" style="padding:6px 0;" onclick="useTitle(this.dataset.t)" data-t="${escapeHtml(t)}"><span style="font-size:14px;">${escapeHtml(t)}</span><span class="go">사용</span></div>`).join('')}
+        <h3>키워드</h3>
+        <p style="font-size:14px;"><b>${escapeHtml(d.mainKeyword)}</b><br><span class="meta">${escapeHtml(d.keywords.join(', '))}</span></p>
+        <label>해시태그</label>
+        <textarea id="edTags" style="min-height:60px;">${escapeHtml(d.hashtags.join(' '))}</textarea>
+        <p class="meta">검색 상위 노출을 보장하지 않습니다. 키워드는 1~2회만 자연스럽게 쓰세요.</p>
+        <h3>출력</h3>
+        <div class="seg" id="fmtSeg">${DRAFT_FORMATS.map(([k, label]) => `<button type="button" data-fmt="${k}" class="${ed.fmt === k ? 'on' : ''}">${label}</button>`).join('')}</div>
+        <div class="output-box" id="blogOutputText"></div>
+        <div class="row" style="margin-top:8px;">
+          <button class="btn small" id="btnCopyDraft">복사</button>
+          <button class="btn small secondary" id="btnDownloadDraft">파일로 받기</button>
+        </div>
+        <p class="meta">게시 전 아이 이름·나이·거주지·기관명이 들어가지 않았는지 다시 확인하세요.</p>
+      </div>
+    </div>`;
+
+  const setPanel = p => { ed.panel = p;
+    box.querySelectorAll('.editor-tabs button').forEach(b => b.classList.toggle('on', b.dataset.p === p));
+    box.querySelectorAll('.editor-panels > .panel').forEach(el => el.classList.toggle('on', el.dataset.p === p)); };
+  box.querySelectorAll('.editor-tabs button').forEach(b => b.onclick = () => setPanel(b.dataset.p));
+  setPanel(ed.panel);
+
+  // 글자 입력은 화면을 다시 그리지 않고 저장만 (입력 중 커서 유지)
+  document.getElementById('edTitle').oninput = e => { d.title = e.target.value; scheduleDraftSave(); };
+  document.getElementById('edIntro').oninput = e => { d.intro = e.target.value; scheduleDraftSave(); };
+  document.getElementById('edTags').oninput = e => { d.hashtags = e.target.value.split(/\s+/).filter(Boolean); scheduleDraftSave(); };
+  box.querySelectorAll('.edHead').forEach(el => el.oninput = () => { d.sections[+el.dataset.i].heading = el.value; scheduleDraftSave(); });
+  box.querySelectorAll('.edText').forEach(el => { autoGrow(el); el.oninput = () => { d.sections[+el.dataset.i].text = el.value; autoGrow(el); scheduleDraftSave(); }; });
+  box.querySelectorAll('.edCap').forEach(el => el.oninput = () => { const p = d.photos.find(p => p.id === el.dataset.id); if (p) p.caption = el.value; scheduleDraftSave(); });
+  box.querySelectorAll('#fmtSeg button').forEach(b => b.onclick = () => { ed.fmt = b.dataset.fmt; refreshOutput(); });
+  document.getElementById('btnCopyDraft').onclick = () => copyText(document.getElementById('blogOutputText').textContent);
+  document.getElementById('btnDownloadDraft').onclick = () => {
+    const f = DRAFT_FORMATS.find(x => x[0] === ed.fmt);
+    const type = f[3] === 'html' ? 'text/html' : f[3] === 'md' ? 'text/markdown' : 'text/plain';
+    downloadBlob(new Blob([f[2](currentDraft)], { type: type + ';charset=utf-8' }), `blog_${safeName(currentDraft.title).slice(0, 20)}_${ed.fmt}.${f[3]}`);
+  };
+  refreshOutput();
+}
+function autoGrow(el) { el.style.height = 'auto'; el.style.height = Math.max(88, el.scrollHeight + 2) + 'px'; }
+function refreshOutput() {
+  const out = document.getElementById('blogOutputText'); if (!out || !currentDraft) return;
+  const f = DRAFT_FORMATS.find(x => x[0] === ed.fmt);
+  out.textContent = f[2](currentDraft);
+  document.querySelectorAll('#fmtSeg button').forEach(b => b.classList.toggle('on', b.dataset.fmt === ed.fmt));
+}
+function restructure() {
+  normalizeDraft(currentDraft, Object.fromEntries(ed.approved.map(m => [m.id, m])));
+  scheduleDraftSave(); renderEditor();
+}
+function placePhoto(id, target) {
+  if (!id) return;
+  const d = currentDraft;
+  if (d.coverId === id) d.coverId = null;
+  d.sections.forEach(x => { x.photoIds = x.photoIds.filter(p => p !== id); });
+  if (target === 'cover') d.coverId = id;
+  else if (+target >= 0) d.sections[+target].photoIds.push(id);
+  restructure();
+}
+function moveSection(i, dir) { const s = currentDraft.sections, j = i + dir; if (j < 0 || j >= s.length) return; [s[i], s[j]] = [s[j], s[i]]; restructure(); }
+async function removeSection(i) {
+  const x = currentDraft.sections[i];
+  if ((x.text.trim() || x.photoIds.length) && !(await confirmModal('문단 삭제', `'${x.heading}' 문단을 지울까요? 들어 있던 사진은 '배치 안 함'이 됩니다.`))) return;
+  currentDraft.sections.splice(i, 1); restructure();
+}
+function addSection() { currentDraft.sections.push({ heading: '새 문단', text: '', note: '', photoIds: [], photoNos: [] }); restructure(); }
+function useTitle(t) { currentDraft.title = t; document.getElementById('edTitle').value = t; scheduleDraftSave(); showToast('제목을 바꿨습니다.'); }
+async function regenerateDraft() {
+  if (ed.rec?.edited && !(await confirmModal('다시 만들기', '직접 고친 원고 내용과 사진 배치가 기록 기준으로 새로 바뀝니다. 계속할까요?'))) return;
+  generateBlogDraft(true);
+}
+
+async function generateBlogDraft(force) {
   const visitId = document.getElementById('blogVisitSelect').value;
-  if (!visitId) { showToast('방문 기록을 선택하세요.'); return; }
+  if (!visitId) { showToast('방문 기록을 고르세요.'); return; }
+  const existing = await dbGet('blogDrafts', 'draft_' + visitId);
+  if (force !== true && existing?.edited && !(await confirmModal('원고 다시 만들기', '직접 고친 원고가 있습니다. 새로 만들면 고친 내용이 사라집니다. 계속할까요?'))) return;
   const { visit: v, media, approved } = await getVisitAndMedia(visitId);
   if (!v) return;
   const d = buildDraft(v, approved);
   const createdAt = new Date().toISOString();
   // 원고와 사진 배치 정보를 함께 저장 (방문 기록마다 최신 1개)
-  await dbPut('blogDrafts', { id: 'draft_' + visitId, visitId, draft: d, createdAt });
-  renderDraft(d, createdAt);
+  const rec = { id: 'draft_' + visitId, visitId, draft: d, createdAt, updatedAt: createdAt, edited: false };
+  await dbPut('blogDrafts', rec);
+  ed.panel = 'main';
+  await openEditor(visitId, rec);
   const pending = media.filter(m => m.type === 'photo' && !['approved', 'excluded'].includes(statusOf(m))).length;
-  showToast(pending ? `원고 생성 완료. 아직 검토하지 않은 사진 ${pending}장은 빠졌습니다.` : '원고가 생성되었습니다.', 3500);
+  showToast(pending ? `원고를 만들었습니다. 검토가 끝나지 않은 사진 ${pending}장은 빠졌습니다.` : '원고를 만들었습니다.', 3500);
 }
 
 async function generateAIPrompt() {
@@ -1699,17 +2312,25 @@ ${d.mainKeyword} / ${d.keywords.join(', ')}
 
 위 내용을 바탕으로 네이버 블로그용 원고를 작성해 주세요.`;
 
-  document.getElementById('blogOutputContainer').innerHTML = `
-    <h2>AI 전달용 프롬프트</h2>
-    <div class="output-box" id="aiPromptText">${escapeHtml(prompt)}</div>
-    <div class="row" style="margin-top:10px;">
-      <button class="btn small" onclick="copyText(document.getElementById('aiPromptText').innerText)">복사</button>
-    </div>
-    <p style="font-size:12px;color:var(--text-sub);">ChatGPT 또는 Claude에 붙여넣어 사용하세요. API 키는 포함되지 않습니다.</p>`;
+  const overlay = document.getElementById('modalOverlay'), content = document.getElementById('modalContent');
+  content.innerHTML = `<h3>AI 전달용 프롬프트</h3>
+    <p class="meta">ChatGPT나 Claude에 붙여 넣어 쓰세요. 사진 파일과 API 키는 들어가지 않습니다.</p>
+    <div class="output-box" id="aiPromptText" style="max-height:50vh;">${escapeHtml(prompt)}</div>
+    <div class="actions"><button class="btn secondary" id="modalCancel">닫기</button><button class="btn" id="modalOk">복사</button></div>`;
+  overlay.classList.add('show');
+  document.getElementById('modalCancel').onclick = () => overlay.classList.remove('show');
+  document.getElementById('modalOk').onclick = () => { copyText(prompt); overlay.classList.remove('show'); };
 }
 
 function copyText(text) {
-  navigator.clipboard.writeText(text).then(() => showToast('복사되었습니다.')).catch(() => showToast('복사 실패'));
+  const fallback = () => {   // 클립보드 권한이 없을 때 대체 방법
+    const t = document.createElement('textarea'); t.value = text; t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); showToast('복사했습니다.'); } catch (_) { showToast('복사하지 못했습니다. 길게 눌러 직접 복사하세요.'); }
+    t.remove();
+  };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(() => showToast('복사했습니다.')).catch(fallback);
+  else fallback();
 }
 function downloadText(text, filename) {
   const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
@@ -1825,7 +2446,9 @@ async function renderBackupStatus() {
   const el = document.getElementById('backupStatus');
   if (!el) return;
   const j = await getSettings('lastBackup_json', ''), z = await getSettings('lastBackup_zip', '');
-  el.innerHTML = `마지막 전체(ZIP) 백업: <b>${z ? fmtDate(z) : '없음'}</b><br>마지막 기록(JSON) 백업: ${j ? fmtDate(j) : '없음'}`;
+  const days = z ? Math.floor((Date.now() - new Date(z)) / 86400000) : null;
+  el.innerHTML = `전체(ZIP): <b>${z ? fmtDate(z) + (days === 0 ? ' (오늘)' : ` (${days}일 전)`) : '아직 없음'}</b>${!z || days > 14 ? ' <span class="warn">· 백업을 권장합니다</span>' : ''}
+    <br>기록만(JSON): ${j ? fmtDate(j) : '없음'}`;
 }
 
 document.getElementById('btnBackupJson')?.addEventListener('click', async () => {
